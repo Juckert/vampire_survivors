@@ -34,22 +34,35 @@ class Game:
         player_x = self.WINDOW_WIDTH // 2
         player_y = self.WINDOW_HEIGHT // 2
         avoid_radius = 100
+        min_distance = 75
+        occupied_positions = []
 
         def is_in_player_zone(x, y):
             return abs(x - player_x) < avoid_radius and abs(y - player_y) < avoid_radius
 
+        def is_too_close_to_other_obstacles(x, y):
+            for pos in occupied_positions:
+                if abs(x - pos[0]) < min_distance and abs(y - pos[1]) < min_distance:
+                    return True
+            return False
+
+        def is_valid_position(x, y):
+            return not is_in_player_zone(x, y) and not is_too_close_to_other_obstacles(x, y)
+
         for _ in range(5):
             while True:
                 x, y = random.randint(0, self.WINDOW_WIDTH - 75), random.randint(0, self.WINDOW_HEIGHT - 75)
-                if not is_in_player_zone(x, y):
+                if is_valid_position(x, y):
+                    occupied_positions.append((x, y))
                     break
             self.obstacles.append(Rock(x, y))
-        
+
         tree_types = ["birch", "oak", "withered_tree", "withered_white_tree"]
         for _ in range(5):
             while True:
                 x, y = random.randint(0, self.WINDOW_WIDTH - 75), random.randint(0, self.WINDOW_HEIGHT - 75)
-                if not is_in_player_zone(x, y):
+                if is_valid_position(x, y):
+                    occupied_positions.append((x, y))
                     break
             tree_type = random.choice(tree_types)
             self.obstacles.append(Tree(x, y, tree_type))

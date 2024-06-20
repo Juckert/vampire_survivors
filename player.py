@@ -15,11 +15,11 @@ class Player:
         self.images_run_right = self.load_images("images\\punk\\Run\\Run_", 6)
         self.images_run_left = [pygame.transform.flip(image, True, False) for image in self.images_run_right]
 
-        self.rect = pygame.Rect(self.x, self.y, 75, 75)
+        self.rect = pygame.Rect(self.x, self.y, 40, 40)
 
     def load_images(self, path, count):
         """Загрузка и масштабирование изображений."""
-        return [pygame.transform.scale(pygame.image.load(f"{path}{i+1}.png"), (75, 75)) for i in range(count)]
+        return [pygame.transform.scale(pygame.image.load(f"{path}{i+1}.png"), (50, 50)) for i in range(count)]
 
     def update(self, keys, window_width, window_height, obstacles):
         prev_x, prev_y = self.x, self.y
