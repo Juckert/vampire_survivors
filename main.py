@@ -1,13 +1,16 @@
 import pygame
 import sys
+import random
 from player import Player
+from obstacle import Rock, Tree
 
 class Game:
     def __init__(self):
         self.init_game_settings()
         self.init_pygame()
+        self.load_background()
         self.create_player()
-        self.create_map()
+        self.create_obstacles()
         self.setup_fps()
 
     def init_game_settings(self):
@@ -19,11 +22,24 @@ class Game:
         self.screen = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
         pygame.display.set_caption("Черная карта и перемещение персонажа")
 
+    def load_background(self):
+        self.background = pygame.image.load("images\\fon\\fon_1.jpg")
+        self.background = pygame.transform.scale(self.background, (self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+
     def create_player(self):
         self.player = Player(self.WINDOW_WIDTH // 2, self.WINDOW_HEIGHT // 2, 5)
 
-    def create_map(self):
-        self.map_color = (0, 0, 0)  # Черный цвет
+    def create_obstacles(self):
+        self.obstacles = []
+        for _ in range(5):
+            x, y = random.randint(0, self.WINDOW_WIDTH - 75), random.randint(0, self.WINDOW_HEIGHT - 75)
+            self.obstacles.append(Rock(x, y))
+        
+        tree_types = ["birch", "oak", "withered_tree", "withered_white_tree"]
+        for _ in range(5):
+            x, y = random.randint(0, self.WINDOW_WIDTH - 75), random.randint(0, self.WINDOW_HEIGHT - 75)
+            tree_type = random.choice(tree_types)
+            self.obstacles.append(Tree(x, y, tree_type))
 
     def setup_fps(self):
         self.FPS = 30
@@ -45,10 +61,12 @@ class Game:
 
     def update_game_state(self):
         keys = pygame.key.get_pressed()
-        self.player.update(keys, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.screen)
+        self.player.update(keys, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.obstacles)
 
     def draw_frame(self):
-        self.screen.fill(self.map_color)
+        self.screen.blit(self.background, (0, 0))  # Отрисовка фона
+        for obstacle in self.obstacles:
+            obstacle.draw(self.screen)
         self.player.draw(self.screen)
         pygame.display.flip()
 
