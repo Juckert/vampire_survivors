@@ -20,10 +20,10 @@ class Game:
     def init_pygame(self):
         pygame.init()
         self.screen = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
-        pygame.display.set_caption("Черная карта и перемещение персонажа")
+        pygame.display.set_caption("Vampire Survivors")
 
     def load_background(self):
-        self.background = pygame.image.load("images\\fon\\fon_1.jpg")
+        self.background = pygame.image.load("images\\fon\\fon_2.jpg")
         self.background = pygame.transform.scale(self.background, (self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
 
     def create_player(self):
@@ -31,13 +31,26 @@ class Game:
 
     def create_obstacles(self):
         self.obstacles = []
+        player_x = self.WINDOW_WIDTH // 2
+        player_y = self.WINDOW_HEIGHT // 2
+        avoid_radius = 100
+
+        def is_in_player_zone(x, y):
+            return abs(x - player_x) < avoid_radius and abs(y - player_y) < avoid_radius
+
         for _ in range(5):
-            x, y = random.randint(0, self.WINDOW_WIDTH - 75), random.randint(0, self.WINDOW_HEIGHT - 75)
+            while True:
+                x, y = random.randint(0, self.WINDOW_WIDTH - 75), random.randint(0, self.WINDOW_HEIGHT - 75)
+                if not is_in_player_zone(x, y):
+                    break
             self.obstacles.append(Rock(x, y))
         
         tree_types = ["birch", "oak", "withered_tree", "withered_white_tree"]
         for _ in range(5):
-            x, y = random.randint(0, self.WINDOW_WIDTH - 75), random.randint(0, self.WINDOW_HEIGHT - 75)
+            while True:
+                x, y = random.randint(0, self.WINDOW_WIDTH - 75), random.randint(0, self.WINDOW_HEIGHT - 75)
+                if not is_in_player_zone(x, y):
+                    break
             tree_type = random.choice(tree_types)
             self.obstacles.append(Tree(x, y, tree_type))
 
@@ -77,3 +90,4 @@ class Game:
 if __name__ == "__main__":
     game = Game()
     game.run()
+    
