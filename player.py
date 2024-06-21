@@ -10,18 +10,18 @@ class Player:
         self.is_moving = False
 
         # Загрузка изображений
-        self.images_right = self.load_images("images\\punk\\idle\\idle_", 4)
+        self.images_right = self.load_images("images\\hero\\Punk\\idle\\idle_", 4)
         self.images_left = [pygame.transform.flip(image, True, False) for image in self.images_right]
-        self.images_run_right = self.load_images("images\\punk\\Run\\Run_", 6)
+        self.images_run_right = self.load_images("images\\hero\\Punk\\Run\\Run_", 6)
         self.images_run_left = [pygame.transform.flip(image, True, False) for image in self.images_run_right]
 
-        self.rect = pygame.Rect(self.x, self.y, 40, 40)
+        self.rect = pygame.Rect(self.x, self.y, 75, 75)
 
     def load_images(self, path, count):
         """Загрузка и масштабирование изображений."""
-        return [pygame.transform.scale(pygame.image.load(f"{path}{i+1}.png"), (50, 50)) for i in range(count)]
+        return [pygame.transform.scale(pygame.image.load(f"{path}{i+1}.png"), (75, 75)) for i in range(count)]
 
-    def update(self, keys, window_width, window_height, obstacles):
+    def update(self, keys, map_width, map_height, obstacles):
         prev_x, prev_y = self.x, self.y
         self.is_moving = False
         if keys[pygame.K_LEFT]:
@@ -47,7 +47,7 @@ class Player:
                 break
 
         self.update_sprite()
-        self.clamp_position(window_width, window_height)
+        self.clamp_position(map_width, map_height)
 
     def update_sprite(self):
         """Обновление текущего спрайта в зависимости от состояния."""
@@ -62,19 +62,19 @@ class Player:
             else:
                 self.current_sprite = (self.current_sprite + 0.08) % len(self.images_right)
 
-    def clamp_position(self, window_width, window_height):
-        """Ограничение позиции персонажа по границам экрана."""
-        self.x = max(0, min(self.x, window_width - 75))
-        self.y = max(0, min(self.y, window_height - 75))
+    def clamp_position(self, map_width, map_height):
+        """Ограничение позиции персонажа по границам карты."""
+        self.x = max(0, min(self.x, map_width - 75))
+        self.y = max(0, min(self.y, map_height - 75))
 
-    def draw(self, screen):
+    def draw(self, screen, camera_x, camera_y):
         if self.is_moving:
             if self.is_facing_left:
-                screen.blit(self.images_run_left[int(self.current_sprite)], (self.x, self.y))
+                screen.blit(self.images_run_left[int(self.current_sprite)], (self.x - camera_x, self.y - camera_y))
             else:
-                screen.blit(self.images_run_right[int(self.current_sprite)], (self.x, self.y))
+                screen.blit(self.images_run_right[int(self.current_sprite)], (self.x - camera_x, self.y - camera_y))
         else:
             if self.is_facing_left:
-                screen.blit(self.images_left[int(self.current_sprite)], (self.x, self.y))
+                screen.blit(self.images_left[int(self.current_sprite)], (self.x - camera_x, self.y - camera_y))
             else:
-                screen.blit(self.images_right[int(self.current_sprite)], (self.x, self.y))
+                screen.blit(self.images_right[int(self.current_sprite)], (self.x - camera_x, self.y - camera_y))
