@@ -3,6 +3,7 @@ import sys
 import random
 from player import Player
 from obstacle import Rock, Tree
+from enemy import Knight
 
 class Game:
     def __init__(self):
@@ -11,6 +12,7 @@ class Game:
         self.load_background()
         self.create_player()
         self.create_obstacles()
+        self.create_enemies()
         self.setup_fps()
 
     def init_game_settings(self):
@@ -38,7 +40,7 @@ class Game:
         player_x = self.MAP_WIDTH // 2
         player_y = self.MAP_HEIGHT // 2
         avoid_radius = 100
-        min_distance = 400
+        min_distance = 50
         occupied_positions = []
 
         def is_in_player_zone(x, y):
@@ -62,7 +64,7 @@ class Game:
             self.obstacles.append(Rock(x, y))
 
         tree_types = ["birch", "oak", "withered_tree", "withered_white_tree"]
-        for _ in range(10):
+        for _ in range(5):
             while True:
                 x, y = random.randint(0, self.MAP_WIDTH - 75), random.randint(0, self.MAP_HEIGHT - 75)
                 if is_valid_position(x, y):
@@ -70,6 +72,15 @@ class Game:
                     break
             tree_type = random.choice(tree_types)
             self.obstacles.append(Tree(x, y, tree_type))
+
+    def create_enemies(self):
+        self.enemies = []
+        for _ in range(3):
+            while True:
+                x, y = random.randint(0, self.MAP_WIDTH - 75), random.randint(0, self.MAP_HEIGHT - 75)
+                if abs(x - self.player.x) > self.WINDOW_WIDTH // 2 or abs(y - self.player.y) > self.WINDOW_HEIGHT // 2:
+                    break
+            self.enemies.append(Knight(x, y))
 
     def setup_fps(self):
         self.FPS = 30
@@ -92,6 +103,8 @@ class Game:
     def update_game_state(self):
         keys = pygame.key.get_pressed()
         self.player.update(keys, self.MAP_WIDTH, self.MAP_HEIGHT, self.obstacles)
+        for enemy in self.enemies:
+            enemy.update(self.player.x, self.player.y, self.obstacles)
         self.update_camera()
 
     def update_camera(self):
@@ -105,6 +118,8 @@ class Game:
         self.screen.blit(self.background, (-self.camera_x, -self.camera_y))  # Отрисовка фона
         for obstacle in self.obstacles:
             obstacle.draw(self.screen, self.camera_x, self.camera_y)
+        for enemy in self.enemies:
+            enemy.draw(self.screen, self.camera_x, self.camera_y)
         self.player.draw(self.screen, self.camera_x, self.camera_y)
         pygame.display.flip()
 
