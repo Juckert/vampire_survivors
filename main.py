@@ -40,7 +40,7 @@ class Game:
         player_x = self.MAP_WIDTH // 2
         player_y = self.MAP_HEIGHT // 2
         avoid_radius = 100
-        min_distance = 50
+        min_distance = 400
         occupied_positions = []
 
         def is_in_player_zone(x, y):
@@ -104,7 +104,7 @@ class Game:
         keys = pygame.key.get_pressed()
         self.player.update(keys, self.MAP_WIDTH, self.MAP_HEIGHT, self.obstacles)
         for enemy in self.enemies:
-            enemy.update(self.player.x, self.player.y, self.obstacles)
+            enemy.update(self.player.x, self.player.y, self.player, self.obstacles)
         self.update_camera()
 
     def update_camera(self):

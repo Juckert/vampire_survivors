@@ -5,6 +5,9 @@ class Player:
         self.x = x
         self.y = y
         self.speed = speed
+        self.hp = 100  # Здоровье героя
+        self.max_hp = 100  # Максимальное здоровье героя
+        self.attack_power = 10  # Сила атаки героя
         self.current_sprite = 0
         self.is_facing_left = False
         self.is_moving = False
@@ -78,3 +81,27 @@ class Player:
                 screen.blit(self.images_left[int(self.current_sprite)], (self.x - camera_x, self.y - camera_y))
             else:
                 screen.blit(self.images_right[int(self.current_sprite)], (self.x - camera_x, self.y - camera_y))
+        self.draw_health_bar(screen, camera_x, camera_y)
+
+    def draw_health_bar(self, screen, camera_x, camera_y):
+        """Отображение шкалы здоровья героя под спрайтом."""
+        bar_length = 75  # Длина шкалы здоровья
+        bar_height = 10  # Высота шкалы здоровья
+        fill = (self.hp / self.max_hp) * bar_length
+
+        # Положение шкалы здоровья под спрайтом героя
+        health_bar_x = self.x - camera_x
+        health_bar_y = self.y + 80 - camera_y
+
+        outline_rect = pygame.Rect(health_bar_x, health_bar_y, bar_length, bar_height)
+        fill_rect = pygame.Rect(health_bar_x, health_bar_y, fill, bar_height)
+
+        pygame.draw.rect(screen, (255, 0, 0), fill_rect)
+        pygame.draw.rect(screen, (255, 255, 255), outline_rect, 2)
+
+    def take_damage(self, damage):
+        """Нанесение урона герою."""
+        self.hp -= damage
+        if self.hp < 0:
+            self.hp = 0
+        # Здесь можно добавить логику смерти героя, если hp <= 0
