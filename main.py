@@ -20,14 +20,18 @@ class Game:
         self.running = True
         self.state = "menu"  # Initial state set to 'menu'
         
+        self.menu = Menu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
+        self.game_over_menu = GameOverMenu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
+
+        self.start_game()  # Start game setup
+
+    def start_game(self):
         self.background = self.load_background()
         self.player = Player(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2, 5)
         self.camera_x = self.player.x - self.WINDOW_WIDTH // 2
         self.camera_y = self.player.y - self.WINDOW_HEIGHT // 2
         self.obstacles = self.create_obstacles()
-        self.enemies = self.create_enemies()  # Generate enemies with random count
-
-        self.menu = Menu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
+        self.enemies = self.create_enemies()
 
     def load_background(self):
         background = pygame.image.load("images/fon/fon_2.jpg")
@@ -87,6 +91,9 @@ class Game:
                 self.handle_events()
                 self.update_game_state()
                 self.draw_frame()
+            elif self.state == "game_over":
+                self.handle_game_over_events()
+                self.game_over_menu.draw()
             self.clock.tick(self.FPS)
         self.quit_game()
 
@@ -96,6 +103,7 @@ class Game:
                 self.running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if self.menu.play_button.collidepoint(event.pos):
+                    self.start_game()  # Reset the game state
                     self.state = "playing"
 
     def handle_events(self):
@@ -108,6 +116,9 @@ class Game:
         self.player.update(keys, self.MAP_WIDTH, self.MAP_HEIGHT, self.obstacles)
         self.update_enemies()
         self.update_camera()
+
+        if self.player.hp <= 0:
+            self.state = "game_over"
 
     def update_enemies(self):
         for enemy in self.enemies:
@@ -125,6 +136,14 @@ class Game:
             enemy.draw(self.screen, self.camera_x, self.camera_y)
         self.player.draw(self.screen, self.camera_x, self.camera_y)
         pygame.display.flip()
+
+    def handle_game_over_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if self.game_over_menu.menu_button.collidepoint(event.pos):
+                    self.state = "menu"
 
     def quit_game(self):
         pygame.quit()
@@ -146,6 +165,23 @@ class Menu:
         play_text = self.font.render("Play", True, (255, 255, 255))
         self.screen.blit(play_text, (self.play_button.x + 50, self.play_button.y + 25))
         pygame.draw.rect(self.screen, (255, 255, 255), self.play_button, 2)
+        pygame.display.flip()
+
+class GameOverMenu:
+    def __init__(self, screen, window_width, window_height):
+        self.screen = screen
+        self.window_width = window_width
+        self.window_height = window_height
+        self.font = pygame.font.Font(None, 74)
+        self.menu_button = pygame.Rect((window_width // 2 - 100, window_height // 2 - 50), (200, 100))
+
+    def draw(self):
+        self.screen.fill((0, 0, 0))
+        game_over_text = self.font.render("Game Over", True, (255, 0, 0))
+        self.screen.blit(game_over_text, (self.window_width // 2 - 150, self.window_height // 2 - 100))
+        menu_text = self.font.render("Menu", True, (255, 255, 255))
+        self.screen.blit(menu_text, (self.menu_button.x + 50, self.menu_button.y + 25))
+        pygame.draw.rect(self.screen, (255, 255, 255), self.menu_button, 2)
         pygame.display.flip()
 
 if __name__ == "__main__":
