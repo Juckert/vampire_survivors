@@ -35,22 +35,31 @@ class Knight(Enemy):
 
     def update(self, player_x, player_y, player, obstacles):
         prev_x, prev_y = self.x, self.y
-
+        
         if abs(self.x - player_x) > abs(self.y - player_y):
-            self.x += self.speed if self.x < player_x else -self.speed
-            self.is_facing_left = self.x > player_x
+            if self.x < player_x:
+                self.x += self.speed
+                self.is_facing_left = False
+            else:
+                self.x -= self.speed
+                self.is_facing_left = True
         else:
-            self.y += self.speed if self.y < player_y else -self.speed
-
+            if self.y < player_y:
+                self.y += self.speed
+            else:
+                self.y -= self.speed
+        
         self.rect.topleft = (self.x, self.y)
+        
         for obstacle in obstacles:
             if self.rect.colliderect(obstacle.rect):
                 self.x, self.y = prev_x, prev_y
                 self.rect.topleft = (self.x, self.y)
                 break
-
+        
         if self.rect.colliderect(player.rect):
             current_time = time.time()
             if current_time - self.last_attack_time >= 1:
                 player.take_damage(self.attack_power)
                 self.last_attack_time = current_time
+
