@@ -11,7 +11,6 @@ class Enemy(ABC):
         self.images_left = [pygame.transform.flip(image, True, False) for image in self.images_right]
         self.current_sprite = 0
         self.is_facing_left = False
-        self.is_moving_vertically = False
         self.rect = pygame.Rect(self.x, self.y, 75, 75)
 
     def load_images(self, paths):
@@ -22,7 +21,7 @@ class Enemy(ABC):
         pass
 
     def draw(self, screen, camera_x, camera_y):
-        if self.is_facing_left and not self.is_moving_vertically:
+        if self.is_facing_left:
             screen.blit(self.images_left[int(self.current_sprite)], (self.x - camera_x, self.y - camera_y))
         else:
             screen.blit(self.images_right[int(self.current_sprite)], (self.x - camera_x, self.y - camera_y))
@@ -36,21 +35,20 @@ class Knight(Enemy):
     def update(self, player_x, player_y, obstacles):
         prev_x, prev_y = self.x, self.y
         
-        self.is_moving_vertically = False
-        
-        if self.x < player_x:
-            self.x += self.speed
-            self.is_facing_left = False
-        elif self.x > player_x:
-            self.x -= self.speed
-            self.is_facing_left = True
-        
-        if self.y < player_y:
-            self.y += self.speed
-            self.is_moving_vertically = True
-        elif self.y > player_y:
-            self.y -= self.speed
-            self.is_moving_vertically = True
+        if abs(self.x - player_x) > abs(self.y - player_y):
+            # Horizontal movement
+            if self.x < player_x:
+                self.x += self.speed
+                self.is_facing_left = False
+            else:
+                self.x -= self.speed
+                self.is_facing_left = True
+        else:
+            # Vertical movement
+            if self.y < player_y:
+                self.y += self.speed
+            else:
+                self.y -= self.speed
         
         self.rect.topleft = (self.x, self.y)
         
@@ -59,3 +57,4 @@ class Knight(Enemy):
                 self.x, self.y = prev_x, prev_y
                 self.rect.topleft = (self.x, self.y)
                 break
+

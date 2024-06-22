@@ -40,7 +40,7 @@ class Game:
         player_x = self.MAP_WIDTH // 2
         player_y = self.MAP_HEIGHT // 2
         avoid_radius = 100
-        min_distance = 400
+        min_distance = 50
         occupied_positions = []
 
         def is_in_player_zone(x, y):
