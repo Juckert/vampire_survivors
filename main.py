@@ -1,7 +1,7 @@
 import pygame
 import sys
 import random
-from player import Player
+from player import Punk
 from obstacle import Rock, Tree
 from enemy import Knight
 
@@ -27,7 +27,7 @@ class Game:
 
     def start_game(self):
         self.background = self.load_background()
-        self.player = Player(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2, 5)
+        self.player = Punk(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2, 5)
         self.camera_x = self.player.x - self.WINDOW_WIDTH // 2
         self.camera_y = self.player.y - self.WINDOW_HEIGHT // 2
         self.obstacles = self.create_obstacles()
