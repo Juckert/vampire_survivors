@@ -43,7 +43,7 @@ class Player:
 
         self.clamp_position(map_width, map_height)
         
-        if self.hurt and time.time() - self.hurt_start_time > 1:  # Восстановление после 1 секунды
+        if self.hurt and time.time() - self.hurt_start_time > 1:  # Recovery after 1 second
             self.hurt = False
 
     def move(self, dx, dy, facing_left=None):
@@ -62,7 +62,7 @@ class Player:
                 self.current_sprite = (self.current_sprite + 0.1) % len(images)
             else:
                 images = self.idle_images_left if self.is_facing_left else self.idle_images_right
-                self.current_sprite = 0  # Сбрасываем анимацию при остановке
+                self.current_sprite = 0  # Reset animation when stopped
             image = images[int(self.current_sprite)]
         
         screen.blit(image, (self.x - camera_x, self.y - camera_y))

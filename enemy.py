@@ -62,4 +62,3 @@ class Knight(Enemy):
             if current_time - self.last_attack_time >= 1:
                 player.take_damage(self.attack_power)
                 self.last_attack_time = current_time
-

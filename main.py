@@ -18,13 +18,16 @@ class Game:
         pygame.display.set_caption("Vampire Survivors")
         self.clock = pygame.time.Clock()
         self.running = True
-
+        self.state = "menu"  # Initial state set to 'menu'
+        
         self.background = self.load_background()
         self.player = Player(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2, 5)
         self.camera_x = self.player.x - self.WINDOW_WIDTH // 2
         self.camera_y = self.player.y - self.WINDOW_HEIGHT // 2
         self.obstacles = self.create_obstacles()
         self.enemies = self.create_enemies()
+
+        self.menu = Menu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
 
     def load_background(self):
         background = pygame.image.load("images/fon/fon_2.jpg")
@@ -75,11 +78,24 @@ class Game:
 
     def run(self):
         while self.running:
-            self.handle_events()
-            self.update_game_state()
-            self.draw_frame()
+            if self.state == "menu":
+                self.menu.update()
+                self.menu.draw()
+                self.handle_menu_events()
+            elif self.state == "playing":
+                self.handle_events()
+                self.update_game_state()
+                self.draw_frame()
             self.clock.tick(self.FPS)
         self.quit_game()
+
+    def handle_menu_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if self.menu.play_button.collidepoint(event.pos):
+                    self.state = "playing"
 
     def handle_events(self):
         for event in pygame.event.get():
@@ -89,9 +105,12 @@ class Game:
     def update_game_state(self):
         keys = pygame.key.get_pressed()
         self.player.update(keys, self.MAP_WIDTH, self.MAP_HEIGHT, self.obstacles)
+        self.update_enemies()
+        self.update_camera()
+
+    def update_enemies(self):
         for enemy in self.enemies:
             enemy.update(self.player.x, self.player.y, self.player, self.obstacles)
-        self.update_camera()
 
     def update_camera(self):
         self.camera_x = max(0, min(self.player.x - self.WINDOW_WIDTH // 2, self.MAP_WIDTH - self.WINDOW_WIDTH))
@@ -109,6 +128,24 @@ class Game:
     def quit_game(self):
         pygame.quit()
         sys.exit()
+
+class Menu:
+    def __init__(self, screen, window_width, window_height):
+        self.screen = screen
+        self.window_width = window_width
+        self.window_height = window_height
+        self.font = pygame.font.Font(None, 74)
+        self.play_button = pygame.Rect((window_width // 2 - 100, window_height // 2 - 50), (200, 100))
+
+    def update(self):
+        pass
+
+    def draw(self):
+        self.screen.fill((0, 0, 0))
+        play_text = self.font.render("Play", True, (255, 255, 255))
+        self.screen.blit(play_text, (self.play_button.x + 50, self.play_button.y + 25))
+        pygame.draw.rect(self.screen, (255, 255, 255), self.play_button, 2)
+        pygame.display.flip()
 
 if __name__ == "__main__":
     game = Game()
