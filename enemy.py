@@ -1,6 +1,7 @@
 import pygame
 from abc import ABC, abstractmethod
 import time
+import random
 
 class Enemy(ABC):
     def __init__(self, x, y, speed, image_paths, hp, attack_power):
@@ -29,9 +30,16 @@ class Enemy(ABC):
         self.hp = max(0, self.hp - damage)
 
 class Knight(Enemy):
+    MIN_SPEED = 1
+    MAX_SPEED = 5
+    MIN_HP = 30
+    MAX_HP = 70
+
     def __init__(self, x, y):
         image_paths = [f"images/enemies/Knight/Run/Knight_Run_{i}.png" for i in range(1, 9)]
-        super().__init__(x, y, 3, image_paths, hp=50, attack_power=5)
+        speed = random.randint(self.MIN_SPEED, self.MAX_SPEED)
+        hp = random.randint(self.MIN_HP, self.MAX_HP)
+        super().__init__(x, y, speed, image_paths, hp, attack_power=5)
 
     def update(self, player_x, player_y, player, obstacles):
         prev_x, prev_y = self.x, self.y

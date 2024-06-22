@@ -25,7 +25,7 @@ class Game:
         self.camera_x = self.player.x - self.WINDOW_WIDTH // 2
         self.camera_y = self.player.y - self.WINDOW_HEIGHT // 2
         self.obstacles = self.create_obstacles()
-        self.enemies = self.create_enemies()
+        self.enemies = self.create_enemies()  # Generate enemies with random count
 
         self.menu = Menu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
 
@@ -68,7 +68,8 @@ class Game:
 
     def create_enemies(self):
         enemies = []
-        for _ in range(3):
+        num_enemies = random.randint(5, 10)  # Random number of enemies between 5 and 10
+        for _ in range(num_enemies):
             while True:
                 x, y = random.randint(0, self.MAP_WIDTH - 75), random.randint(0, self.MAP_HEIGHT - 75)
                 if abs(x - self.player.x) > self.WINDOW_WIDTH // 2 or abs(y - self.player.y) > self.WINDOW_HEIGHT // 2:
