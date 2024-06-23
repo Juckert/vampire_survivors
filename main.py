@@ -121,8 +121,15 @@ class Game:
             self.state = "game_over"
 
     def update_enemies(self):
-        for enemy in self.enemies:
+        for enemy in self.enemies[:]:
             enemy.update(self.player.x, self.player.y, self.player, self.obstacles)
+            for fireball in self.player.fireballs[:]:
+                if fireball.rect.colliderect(enemy.rect):
+                    enemy.take_damage(self.player.attack_power)
+                    self.player.fireballs.remove(fireball)
+                    if enemy.hp <= 0:
+                        self.enemies.remove(enemy)
+                    break
 
     def update_camera(self):
         self.camera_x = max(0, min(self.player.x - self.WINDOW_WIDTH // 2, self.MAP_WIDTH - self.WINDOW_WIDTH))
