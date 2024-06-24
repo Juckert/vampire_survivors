@@ -24,6 +24,10 @@ class BaseMenu:
     def draw_background(self):
         self.screen.blit(self.background_image, (0, 0))
 
+    def draw_button(self, rect, text, text_color, background_color):
+        pygame.draw.rect(self.screen, background_color, rect)
+        self.draw_text_with_background(text, self.button_font, text_color, background_color, rect.center)
+
     def update(self):
         pass
 
@@ -38,22 +42,21 @@ class Menu(BaseMenu):
     def draw(self):
         self.draw_background()
 
-        first_part_center = (self.window_width // 2, self.window_height // 2 - 350)
-        self.draw_text_no_background("Vampire", self.title_font, (255, 0, 0), first_part_center)
+        title_centers = [
+            (self.window_width // 2, self.window_height // 2 - 350),
+            (self.window_width // 2, self.window_height // 2 - 250)
+        ]
+        titles = ["Vampire", "Survivors"]
+        for title, center in zip(titles, title_centers):
+            self.draw_text_no_background(title, self.title_font, (255, 0, 0), center)
         
-        second_part_center = (self.window_width // 2, self.window_height // 2 - 250)
-        self.draw_text_no_background("Survivors", self.title_font, (255, 0, 0), second_part_center)
-        
-        pygame.draw.rect(self.screen, (0, 0, 255), self.play_button)
-        play_text_center = self.play_button.center
-        self.draw_text_with_background("Начать", self.button_font, (255, 255, 255), (0, 0, 255), play_text_center)
+        self.draw_button(self.play_button, "Начать", (255, 255, 255), (0, 0, 255))
         
         pygame.display.flip()
 
 class PauseMenu(BaseMenu):
     def __init__(self, screen, window_width, window_height, background_image):
         super().__init__(screen, window_width, window_height, background_image)
-        self.pause_font = pygame.font.Font(None, 74)
         button_width = 200
         button_height = 50
         button_x = window_width // 2 - button_width // 2
@@ -63,15 +66,10 @@ class PauseMenu(BaseMenu):
     def draw(self):
         self.draw_background()
         pause_center = (self.window_width // 2, self.window_height // 2 - 350)
-        self.draw_text_no_background("Пауза", self.pause_font, (255, 0, 0), pause_center)
+        self.draw_text_no_background("Пауза", self.title_font, (255, 0, 0), pause_center)
         
-        pygame.draw.rect(self.screen, (0, 0, 255), self.continue_button)
-        continue_text_center = self.continue_button.center
-        self.draw_text_with_background("Продолжить", self.button_font, (255, 255, 255), (0, 0, 255), continue_text_center)
-        
-        pygame.draw.rect(self.screen, (0, 0, 255), self.quit_button)
-        quit_text_center = self.quit_button.center
-        self.draw_text_with_background("Выйти в меню", self.button_font, (255, 255, 255), (0, 0, 255), quit_text_center)
+        self.draw_button(self.continue_button, "Продолжить", (255, 255, 255), (0, 0, 255))
+        self.draw_button(self.quit_button, "Выйти в меню", (255, 255, 255), (0, 0, 255))
         
         pygame.display.flip()
 
@@ -94,9 +92,7 @@ class GameOverMenu(BaseMenu):
         game_over_center = (self.window_width // 2, self.window_height // 2 - 350)
         self.draw_text_no_background("Game Over", self.title_font, (255, 0, 0), game_over_center)
         
-        pygame.draw.rect(self.screen, (0, 0, 255), self.menu_button)
-        menu_text_center = self.menu_button.center
-        self.draw_text_with_background("Выйти в меню", self.button_font, (255, 255, 255), (0, 0, 255), menu_text_center)
+        self.draw_button(self.menu_button, "Выйти в меню", (255, 255, 255), (0, 0, 255))
         
         pygame.display.flip()
 
