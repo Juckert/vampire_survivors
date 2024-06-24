@@ -12,7 +12,7 @@ class BaseMenu:
     def draw_text_with_background(self, text, font, text_color, background_color, center):
         text_surface = font.render(text, True, text_color)
         text_rect = text_surface.get_rect(center=center)
-        background_rect = text_rect.inflate(10, 10)  # Extend background rectangle around text
+        background_rect = text_rect.inflate(10, 10)
         pygame.draw.rect(self.screen, background_color, background_rect)
         self.screen.blit(text_surface, text_rect)
 
@@ -38,15 +38,12 @@ class Menu(BaseMenu):
     def draw(self):
         self.draw_background()
 
-        # Draw first part of title text with gold color (no background)
         first_part_center = (self.window_width // 2, self.window_height // 2 - 350)
         self.draw_text_no_background("Vampire", self.title_font, (255, 0, 0), first_part_center)
         
-        # Draw second part of title text with gold color (no background)
         second_part_center = (self.window_width // 2, self.window_height // 2 - 250)
         self.draw_text_no_background("Survivors", self.title_font, (255, 0, 0), second_part_center)
         
-        # Draw play button with silver background and gold color
         pygame.draw.rect(self.screen, (0, 0, 255), self.play_button)
         play_text_center = self.play_button.center
         self.draw_text_with_background("Начать", self.button_font, (255, 255, 255), (0, 0, 255), play_text_center)

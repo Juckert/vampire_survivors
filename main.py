@@ -19,14 +19,14 @@ class Game:
         pygame.display.set_caption("Vampire Survivors")
         self.clock = pygame.time.Clock()
         self.running = True
-        self.state = "menu"  # Initial state set to 'menu'
+        self.state = "menu"
         self.defeated_enemies = 0
         self.background_image = self.load_background_image()  # Load background image for menus
         self.menu = Menu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.background_image)
         self.pause_menu = PauseMenu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.background_image)
         self.game_over_menu = GameOverMenu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.background_image)
         self.start_time = None
-        self.start_game()  # Start game setup
+        self.start_game()
 
     def start_game(self):
         self.defeated_enemies = 0
@@ -108,7 +108,7 @@ class Game:
 
     def create_enemies(self):
         enemies = []
-        num_enemies = random.randint(20, 30)  # Random number of enemies between 20 and 30
+        num_enemies = random.randint(20, 30)
         for _ in range(num_enemies):
             enemies.append(self.spawn_enemy())
         return enemies
@@ -149,7 +149,7 @@ class Game:
             self.running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if self.menu.play_button.collidepoint(event.pos):
-                self.start_game()  # Reset the game state
+                self.start_game()
                 self.state = "playing"
 
     def handle_events(self):
@@ -192,7 +192,6 @@ class Game:
         self.update_enemies()
         self.update_camera()
 
-        # Calculate the elapsed time in seconds
         current_time = pygame.time.get_ticks()
         self.elapsed_time = (current_time - self.start_time) / 1000
 
@@ -209,7 +208,7 @@ class Game:
                     self.player.fireballs.remove(fireball)
                     if enemy.hp <= 0:
                         self.enemies.remove(enemy)
-                        self.defeated_enemies += 1  # Increment defeated enemies counter
+                        self.defeated_enemies += 1
                         new_enemy = self.spawn_enemy()
                         self.enemies.append(new_enemy)
                     break
@@ -226,7 +225,6 @@ class Game:
             enemy.draw(self.screen, self.camera_x, self.camera_y)
         self.player.draw(self.screen, self.camera_x, self.camera_y)
 
-        # Render the elapsed time
         self.draw_timer()
         self.draw_defeated_enemies()
         pygame.display.flip()
@@ -261,7 +259,7 @@ class Game:
         self.screen.blit(skull_image, (skull_x, skull_y))
 
         font = pygame.font.Font(None, 36)
-        text = font.render(str(self.defeated_enemies), True, (255, 255, 255))  # White color
+        text = font.render(str(self.defeated_enemies), True, (255, 255, 255))
         text_rect = text.get_rect(midright=(skull_x - 5, skull_y + skull_rect.height // 2))
         self.screen.blit(text, text_rect)
 

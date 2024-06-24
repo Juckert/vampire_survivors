@@ -12,7 +12,7 @@ class Fireball:
         self.load_images()
         self.image_index = 0
         self.rect = self.images[self.image_index].get_rect(center=(self.x, self.y))
-        self.active = True  # Добавляем атрибут, чтобы отслеживать, активен ли fireball
+        self.active = True
 
     def load_images(self):
         self.original_images = [pygame.transform.scale(pygame.image.load(f"images\hero\Punk\Weapon\Fireball_{i}.png"), (40, 40)) for i in range(1, 5)]
@@ -29,7 +29,6 @@ class Fireball:
         self.rect.topleft = (self.x, self.y)
         self.image_index = (self.image_index + 0.2) % len(self.images)
         
-        # Проверка пройденного расстояния
         if abs(self.x - self.start_x) > self.MAX_DISTANCE:
             self.active = False
 

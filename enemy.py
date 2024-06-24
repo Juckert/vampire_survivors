@@ -71,7 +71,7 @@ class Enemy(ABC):
 
         self.attack_player(player)
 
-        if self.hurt and time.time() - self.hurt_start_time > 1:  # Восстановление после 1 секунды
+        if self.hurt and time.time() - self.hurt_start_time > 1:
             self.hurt = False
 
     def draw(self, screen, camera_x, camera_y):

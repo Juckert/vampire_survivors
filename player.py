@@ -49,7 +49,7 @@ class Player(ABC):
             else:
                 images = self.idle_images_left if self.is_facing_left else self.idle_images_right
                 image = images[int(self.current_sprite)]
-                self.current_sprite = 0  # Сбрасываем анимацию при остановке
+                self.current_sprite = 0
 
         screen.blit(image, (self.x - camera_x, self.y - camera_y))
         self.draw_health_bar(screen, camera_x, camera_y)
@@ -91,9 +91,9 @@ class Punk(Player):
         self.idle_images_left = [pygame.transform.flip(image, True, False) for image in self.idle_images_right]
         self.hurt_image_right = pygame.transform.scale(pygame.image.load("images/hero/Punk/Hurt/Punk_hurt.png"), (75, 75))
         self.hurt_image_left = pygame.transform.flip(self.hurt_image_right, True, False)
-        self.fireballs = []  # List to hold fireballs
+        self.fireballs = []
         self.last_fire_time = 0
-        self.fire_delay = 0.5  # Fire rate in seconds
+        self.fire_delay = 0.5
 
     def update(self, keys, map_width, map_height, obstacles):
         self.is_moving = False
@@ -116,7 +116,7 @@ class Punk(Player):
 
         self.clamp_position(map_width, map_height)
         
-        if self.hurt and time.time() - self.hurt_start_time > 1:  # Восстановление после 1 секунды
+        if self.hurt and time.time() - self.hurt_start_time > 1:
             self.hurt = False
 
         self.update_fireballs(map_width, map_height, obstacles)
@@ -151,7 +151,7 @@ class Punk(Player):
                 self.current_sprite = (self.current_sprite + 0.1) % len(images)
             else:
                 images = self.idle_images_left if self.is_facing_left else self.idle_images_right
-                self.current_sprite = 0  # Сбрасываем анимацию при остановке
+                self.current_sprite = 0
             image = images[int(self.current_sprite)]
         
         screen.blit(image, (self.x - camera_x, self.y - camera_y))
