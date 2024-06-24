@@ -23,7 +23,9 @@ class Player(ABC):
         self.hurt_image_right = None
         self.hurt_image_left = None
         self.rect = pygame.Rect(self.x, self.y, 75, 75)
-
+        self.hurt_image_2_right = None
+        self.hurt_image_2_left = None
+        
     def load_images(self, pattern, count):
         return [pygame.transform.scale(pygame.image.load(pattern.format(i)), (75, 75)) for i in range(1, count + 1)]
 
@@ -40,7 +42,10 @@ class Player(ABC):
 
     def draw(self, screen, camera_x, camera_y):
         if self.hurt:
-            image = self.hurt_image_left if self.is_facing_left else self.hurt_image_right
+            if self.is_moving:
+                image = self.hurt_image_2_left if self.is_facing_left else self.hurt_image_2_right
+            else:
+                image = self.hurt_image_left if self.is_facing_left else self.hurt_image_right
         else:
             if self.is_moving:
                 images = self.images_left if self.is_facing_left else self.images_right
@@ -94,7 +99,9 @@ class Punk(Player):
         self.fireballs = []
         self.last_fire_time = 0
         self.fire_delay = 0.5
-
+        self.hurt_image_2_right = pygame.transform.scale(pygame.image.load("images/hero/Punk/Hurt/Punk_hurt_2.png"), (75, 75))
+        self.hurt_image_2_left = pygame.transform.flip(self.hurt_image_2_right, True, False)
+        
     def update(self, keys, map_width, map_height, obstacles):
         self.is_moving = False
         prev_x, prev_y = self.x, self.y
@@ -144,7 +151,10 @@ class Punk(Player):
 
     def draw(self, screen, camera_x, camera_y):
         if self.hurt:
-            image = self.hurt_image_left if self.is_facing_left else self.hurt_image_right
+            if self.is_moving:
+                image = self.hurt_image_2_left if self.is_facing_left else self.hurt_image_2_right
+            else:
+                image = self.hurt_image_left if self.is_facing_left else self.hurt_image_right
         else:
             if self.is_moving:
                 images = self.images_left if self.is_facing_left else self.images_right
@@ -153,7 +163,6 @@ class Punk(Player):
                 images = self.idle_images_left if self.is_facing_left else self.idle_images_right
                 self.current_sprite = 0
             image = images[int(self.current_sprite)]
-        
         screen.blit(image, (self.x - camera_x, self.y - camera_y))
         self.draw_health_bar(screen, camera_x, camera_y)
 
