@@ -53,20 +53,38 @@ class Menu(BaseMenu):
         
         pygame.display.flip()
 
-
 class PauseMenu(BaseMenu):
     def __init__(self, screen, window_width, window_height, background_image):
         super().__init__(screen, window_width, window_height, background_image)
         self.pause_font = pygame.font.Font(None, 74)
+        button_width = 200
+        button_height = 50
+        button_x = window_width // 2 - button_width // 2
+        self.continue_button = pygame.Rect(button_x, window_height // 2 - 50, button_width, button_height)
+        self.quit_button = pygame.Rect(button_x, window_height // 2 + 50, button_width, button_height)
 
     def draw(self):
         self.draw_background()
-
-        # Draw "Paused" text with silver background and gold color
-        self.draw_text_with_background("Пауза", self.pause_font, (255, 255, 255), (0, 0, 255), (self.window_width // 2, self.window_height // 2))
+        pause_center = (self.window_width // 2, self.window_height // 2 - 350)
+        self.draw_text_no_background("Пауза", self.pause_font, (255, 0, 0), pause_center)
+        
+        pygame.draw.rect(self.screen, (0, 0, 255), self.continue_button)
+        continue_text_center = self.continue_button.center
+        self.draw_text_with_background("Продолжить", self.button_font, (255, 255, 255), (0, 0, 255), continue_text_center)
+        
+        pygame.draw.rect(self.screen, (0, 0, 255), self.quit_button)
+        quit_text_center = self.quit_button.center
+        self.draw_text_with_background("Выйти в меню", self.button_font, (255, 255, 255), (0, 0, 255), quit_text_center)
         
         pygame.display.flip()
 
+    def handle_events(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.continue_button.collidepoint(event.pos):
+                return "continue"
+            elif self.quit_button.collidepoint(event.pos):
+                return "quit"
+        return None
 
 class GameOverMenu(BaseMenu):
     def __init__(self, screen, window_width, window_height, background_image):
@@ -76,12 +94,17 @@ class GameOverMenu(BaseMenu):
     def draw(self):
         self.draw_background()
 
-        # Draw "Game Over" text with silver background and gold color
-        self.draw_text_with_background("Game Over", self.title_font, (255, 255, 255), (0, 0, 255), (self.window_width // 2, self.window_height // 2 - 100))
+        game_over_center = (self.window_width // 2, self.window_height // 2 - 350)
+        self.draw_text_no_background("Game Over", self.title_font, (255, 0, 0), game_over_center)
         
-        # Draw "Main Menu" button with silver background and gold color
         pygame.draw.rect(self.screen, (0, 0, 255), self.menu_button)
         menu_text_center = self.menu_button.center
         self.draw_text_with_background("Выйти в меню", self.button_font, (255, 255, 255), (0, 0, 255), menu_text_center)
         
         pygame.display.flip()
+
+    def handle_events(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.menu_button.collidepoint(event.pos):
+                return "menu"
+        return None

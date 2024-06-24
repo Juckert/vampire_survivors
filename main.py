@@ -126,46 +126,65 @@ class Game:
             if self.state == "menu":
                 self.menu.update()
                 self.menu.draw()
-                self.handle_menu_events()
+                for event in pygame.event.get():
+                    self.handle_menu_events(event)
             elif self.state == "playing":
                 self.handle_events()
                 self.update_game_state()
                 self.draw_frame()
             elif self.state == "paused":
-                self.handle_pause_events()
                 self.pause_menu.draw()
+                for event in pygame.event.get():
+                    self.handle_pause_events(event)
             elif self.state == "game_over":
-                self.handle_game_over_events()
                 self.game_over_menu.draw()
+                for event in pygame.event.get():
+                    self.handle_game_over_events(event)
+
             self.clock.tick(self.FPS)
         self.quit_game()
 
-    def handle_menu_events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if self.menu.play_button.collidepoint(event.pos):
-                    self.start_game()  # Reset the game state
-                    self.state = "playing"
+    def handle_menu_events(self, event):
+        if event.type == pygame.QUIT:
+            self.running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if self.menu.play_button.collidepoint(event.pos):
+                self.start_game()  # Reset the game state
+                self.state = "playing"
 
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:
+                if event.key == pygame.K_ESCAPE:
                     self.state = "paused"
+                elif event.key == pygame.K_LEFT:
+                    self.player.move_left()
+                elif event.key == pygame.K_RIGHT:
+                    self.player.move_right()
+                elif event.key == pygame.K_UP:
+                    self.player.move_up()
+                elif event.key == pygame.K_DOWN:
+                    self.player.move_down()
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                    self.player.stop_horizontal()
+                elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+                    self.player.stop_vertical()
 
-    def handle_pause_events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:
-                    self.state = "playing"
-                elif event.key == pygame.K_q:
-                    self.state = "menu"
+    def handle_pause_events(self, event):
+        if event.type == pygame.QUIT:
+            self.running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.state = "playing"
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            action = self.pause_menu.handle_events(event)
+            if action == "continue":
+                self.state = "playing"
+            elif action == "quit":
+                self.state = "menu"
 
     def update_game_state(self):
         keys = pygame.key.get_pressed()
@@ -179,6 +198,7 @@ class Game:
 
         if self.player.hp <= 0:
             self.state = "game_over"
+
 
     def update_enemies(self):
         for enemy in self.enemies[:]:
@@ -218,14 +238,20 @@ class Game:
         time_text = font.render(f"{minutes:02}:{seconds:02}", True, (255, 255, 255))
         self.screen.blit(time_text, (self.screen.get_width() // 2 - 50, 20))
 
-    def handle_game_over_events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if self.game_over_menu.menu_button.collidepoint(event.pos):
-                    self.state = "menu"
-
+    def handle_game_over_events(self, event):
+        if event.type == pygame.QUIT:
+            self.running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if self.game_over_menu.menu_button.collidepoint(event.pos):
+                self.state = "menu"
+                    
+    def handle_pause_events(self, event):
+        action = self.pause_menu.handle_events(event)
+        if action == "continue":
+            self.state = "playing"
+        elif action == "quit":
+            self.state = "menu"
+            
     def draw_defeated_enemies(self):
         skull_image = pygame.image.load("images/decor/Skull.png")
         skull_image = pygame.transform.scale(skull_image, (40, 40))
