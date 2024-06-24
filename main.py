@@ -15,38 +15,38 @@ class Game:
 
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+        self._screen = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
         pygame.display.set_caption("Vampire Survivors")
-        self.clock = pygame.time.Clock()
-        self.running = True
-        self.state = "menu"
-        self.defeated_enemies = 0
-        self.background_image = self.load_background_image()  # Load background image for menus
-        self.menu = Menu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.background_image)
-        self.pause_menu = PauseMenu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.background_image)
-        self.game_over_menu = GameOverMenu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self.background_image)
-        self.start_time = None
-        self.start_game()
+        self._clock = pygame.time.Clock()
+        self._running = True
+        self._state = "menu"
+        self._defeated_enemies = 0
+        self._background_image = self._load_background_image()  # Load background image for menus
+        self._menu = Menu(self._screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self._background_image)
+        self._pause_menu = PauseMenu(self._screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self._background_image)
+        self._game_over_menu = GameOverMenu(self._screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self._background_image)
+        self._start_time = None
+        self._start_game()
 
-    def start_game(self):
-        self.defeated_enemies = 0
-        self.background = self.load_background()
-        self.player = Punk(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2)
-        self.camera_x = self.player.x - self.WINDOW_WIDTH // 2
-        self.camera_y = self.player.y - self.WINDOW_HEIGHT // 2
-        self.obstacles = self.create_obstacles()
-        self.enemies = self.create_enemies()
-        self.start_time = pygame.time.get_ticks()
+    def _start_game(self):
+        self._defeated_enemies = 0
+        self._background = self._load_background()
+        self._player = Punk(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2)
+        self._camera_x = self._player.x - self.WINDOW_WIDTH // 2
+        self._camera_y = self._player.y - self.WINDOW_HEIGHT // 2
+        self._obstacles = self._create_obstacles()
+        self._enemies = self._create_enemies()
+        self._start_time = pygame.time.get_ticks()
 
-    def load_background_image(self):
+    def _load_background_image(self):
         image = pygame.image.load("images/fon/Blood_moon.jpg")
         return pygame.transform.scale(image, (self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
 
-    def load_background(self):
+    def _load_background(self):
         background = pygame.image.load("images/fon/fon_2.jpg")
         return pygame.transform.scale(background, (self.MAP_WIDTH, self.MAP_HEIGHT))
 
-    def create_obstacles(self):
+    def _create_obstacles(self):
         obstacles = []
         player_x, player_y = self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2
         occupied_positions = set()
@@ -61,209 +61,201 @@ class Game:
             return True
 
         for _ in range(5):
-            x, y = self.get_random_position(is_valid_position)
+            x, y = self._get_random_position(is_valid_position)
             occupied_positions.add((x, y))
             obstacles.append(Rock(x, y))
 
         tree_types = ["birch", "oak", "withered_tree", "withered_white_tree"]
         for _ in range(5):
-            x, y = self.get_random_position(is_valid_position)
+            x, y = self._get_random_position(is_valid_position)
             occupied_positions.add((x, y))
             obstacles.append(Tree(x, y, random.choice(tree_types)))
 
         return obstacles
 
-    def get_random_position(self, is_valid_position):
+    def _get_random_position(self, is_valid_position):
         while True:
             x, y = random.randint(0, self.MAP_WIDTH - 75), random.randint(0, self.MAP_HEIGHT - 75)
             if is_valid_position(x, y):
                 return x, y
 
-    def is_valid_enemy_spawn_position(self, x, y):
-        if abs(x - self.player.x) <= self.WINDOW_WIDTH // 2 and abs(y - self.player.y) <= self.WINDOW_HEIGHT // 2:
+    def _is_valid_enemy_spawn_position(self, x, y):
+        if abs(x - self._player.x) <= self.WINDOW_WIDTH // 2 and abs(y - self._player.y) <= self.WINDOW_HEIGHT // 2:
             return False
-        if self.is_visible_to_player(x, y):
+        if self._is_visible_to_player(x, y):
             return False
-        if not self.is_valid_enemy_position(x, y):
+        if not self._is_valid_enemy_position(x, y):
             return False
         return True
 
-    def is_valid_enemy_position(self, x, y):
+    def _is_valid_enemy_position(self, x, y):
         safe_distance = 150
-        for obstacle in self.obstacles:
+        for obstacle in self._obstacles:
             if obstacle.rect.collidepoint(x, y):
                 return False
             if abs(x - obstacle.rect.centerx) < safe_distance and abs(y - obstacle.rect.centery) < safe_distance:
                 return False
         return True
 
-    def is_visible_to_player(self, x, y):
+    def _is_visible_to_player(self, x, y):
         player_rect = pygame.Rect(
-            self.player.x - self.WINDOW_WIDTH // 2,
-            self.player.y - self.WINDOW_HEIGHT // 2,
+            self._player.x - self.WINDOW_WIDTH // 2,
+            self._player.y - self.WINDOW_HEIGHT // 2,
             self.WINDOW_WIDTH,
             self.WINDOW_HEIGHT
         )
         return player_rect.collidepoint(x, y)
 
-    def create_enemies(self):
+    def _create_enemies(self):
         enemies = []
         num_enemies = random.randint(20, 30)
         for _ in range(num_enemies):
-            enemies.append(self.spawn_enemy())
+            enemies.append(self._spawn_enemy())
         return enemies
 
-    def spawn_enemy(self):
+    def _spawn_enemy(self):
         while True:
             x, y = random.randint(0, self.MAP_WIDTH - 75), random.randint(0, self.MAP_HEIGHT - 75)
-            if self.is_valid_enemy_spawn_position(x, y):
+            if self._is_valid_enemy_spawn_position(x, y):
                 enemy_type = random.choice([Knight, Skeleton, Demon])
                 break
         return enemy_type(x, y)
 
     def run(self):
-        while self.running:
-            if self.state == "menu":
-                self.menu.update()
-                self.menu.draw()
+        while self._running:
+            if self._state == "menu":
+                self._menu.update()
+                self._menu.draw()
                 for event in pygame.event.get():
-                    self.handle_menu_events(event)
-            elif self.state == "playing":
-                self.handle_events()
-                self.update_game_state()
-                self.draw_frame()
-            elif self.state == "paused":
-                self.pause_menu.draw()
+                    self._handle_menu_events(event)
+            elif self._state == "playing":
+                self._handle_events()
+                self._update_game_state()
+                self._draw_frame()
+            elif self._state == "paused":
+                self._pause_menu.draw()
                 for event in pygame.event.get():
-                    self.handle_pause_events(event)
-            elif self.state == "game_over":
-                self.game_over_menu.draw()
+                    self._handle_pause_events(event)
+            elif self._state == "game_over":
+                self._game_over_menu.draw()
                 for event in pygame.event.get():
-                    self.handle_game_over_events(event)
+                    self._handle_game_over_events(event)
 
-            self.clock.tick(self.FPS)
-        self.quit_game()
+            self._clock.tick(self.FPS)
+        self._quit_game()
 
-    def handle_menu_events(self, event):
+    def _handle_menu_events(self, event):
         if event.type == pygame.QUIT:
-            self.running = False
+            self._running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if self.menu._play_button.collidepoint(event.pos):
-                self.start_game()
-                self.state = "playing"
+            if self._menu._play_button.collidepoint(event.pos):
+                self._start_game()
+                self._state = "playing"
 
-    def handle_events(self):
+    def _handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.running = False
+                self._running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    self.state = "paused"
+                    self._state = "paused"
                 elif event.key == pygame.K_LEFT:
-                    self.player.move_left()
+                    self._player.move_left()
                 elif event.key == pygame.K_RIGHT:
-                    self.player.move_right()
+                    self._player.move_right()
                 elif event.key == pygame.K_UP:
-                    self.player.move_up()
+                    self._player.move_up()
                 elif event.key == pygame.K_DOWN:
-                    self.player.move_down()
+                    self._player.move_down()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    self.player.stop_horizontal()
+                    self._player.stop_horizontal()
                 elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-                    self.player.stop_vertical()
+                    self._player.stop_vertical()
 
-    def handle_pause_events(self, event):
+    def _handle_pause_events(self, event):
         if event.type == pygame.QUIT:
-            self.running = False
+            self._running = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                self.state = "playing"
+                self._state = "playing"
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            action = self.pause_menu.handle_events(event)
+            action = self._pause_menu.handle_events(event)
             if action == "continue":
-                self.state = "playing"
+                self._state = "playing"
             elif action == "quit":
-                self.state = "menu"
+                self._state = "menu"
 
-    def update_game_state(self):
+    def _update_game_state(self):
         keys = pygame.key.get_pressed()
-        self.player.update(keys, self.MAP_WIDTH, self.MAP_HEIGHT, self.obstacles)
-        self.update_enemies()
-        self.update_camera()
+        self._player.update(keys, self.MAP_WIDTH, self.MAP_HEIGHT, self._obstacles)
+        self._update_enemies()
+        self._update_camera()
 
         current_time = pygame.time.get_ticks()
-        self.elapsed_time = (current_time - self.start_time) / 1000
+        self._elapsed_time = (current_time - self._start_time) / 1000
 
-        if self.player.hp <= 0:
-            self.state = "game_over"
+        if self._player.hp <= 0:
+            self._state = "game_over"
 
-
-    def update_enemies(self):
-        for enemy in self.enemies[:]:
-            enemy.update(self.player.x, self.player.y, self.player, self.obstacles)
-            for fireball in self.player.fireballs[:]:
+    def _update_enemies(self):
+        for enemy in self._enemies[:]:
+            enemy.update(self._player.x, self._player.y, self._player, self._obstacles)
+            for fireball in self._player.fireballs[:]:
                 if fireball.rect.colliderect(enemy._rect):
-                    enemy.take_damage(self.player.attack_power)
-                    self.player.fireballs.remove(fireball)
+                    enemy.take_damage(self._player.attack_power)
+                    self._player.fireballs.remove(fireball)
                     if enemy.hp <= 0:
-                        self.enemies.remove(enemy)
-                        self.defeated_enemies += 1
-                        new_enemy = self.spawn_enemy()
-                        self.enemies.append(new_enemy)
+                        self._enemies.remove(enemy)
+                        self._defeated_enemies += 1
+                        new_enemy = self._spawn_enemy()
+                        self._enemies.append(new_enemy)
                     break
 
-    def update_camera(self):
-        self.camera_x = max(0, min(self.player.x - self.WINDOW_WIDTH // 2, self.MAP_WIDTH - self.WINDOW_WIDTH))
-        self.camera_y = max(0, min(self.player.y - self.WINDOW_HEIGHT // 2, self.MAP_HEIGHT - self.WINDOW_HEIGHT))
+    def _update_camera(self):
+        self._camera_x = max(0, min(self._player.x - self.WINDOW_WIDTH // 2, self.MAP_WIDTH - self.WINDOW_WIDTH))
+        self._camera_y = max(0, min(self._player.y - self.WINDOW_HEIGHT // 2, self.MAP_HEIGHT - self.WINDOW_HEIGHT))
 
-    def draw_frame(self):
-        self.screen.blit(self.background, (-self.camera_x, -self.camera_y))
-        for obstacle in self.obstacles:
-            obstacle.draw(self.screen, self.camera_x, self.camera_y)
-        for enemy in self.enemies:
-            enemy.draw(self.screen, self.camera_x, self.camera_y)
-        self.player.draw(self.screen, self.camera_x, self.camera_y)
+    def _draw_frame(self):
+        self._screen.blit(self._background, (-self._camera_x, -self._camera_y))
+        for obstacle in self._obstacles:
+            obstacle.draw(self._screen, self._camera_x, self._camera_y)
+        for enemy in self._enemies:
+            enemy.draw(self._screen, self._camera_x, self._camera_y)
+        self._player.draw(self._screen, self._camera_x, self._camera_y)
 
-        self.draw_timer()
-        self.draw_defeated_enemies()
+        self._draw_timer()
+        self._draw_defeated_enemies()
         pygame.display.flip()
 
-    def draw_timer(self):
+    def _draw_timer(self):
         font = pygame.font.Font(None, 50)
-        minutes = int(self.elapsed_time // 60)
-        seconds = int(self.elapsed_time % 60)
+        minutes = int(self._elapsed_time // 60)
+        seconds = int(self._elapsed_time % 60)
         time_text = font.render(f"{minutes:02}:{seconds:02}", True, (255, 255, 255))
-        self.screen.blit(time_text, (self.screen.get_width() // 2 - 50, 20))
+        self._screen.blit(time_text, (self._screen.get_width() // 2 - 50, 20))
 
-    def handle_game_over_events(self, event):
+    def _handle_game_over_events(self, event):
         if event.type == pygame.QUIT:
-            self.running = False
+            self._running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if self.game_over_menu._menu_button.collidepoint(event.pos):
-                self.state = "menu"
-                    
-    def handle_pause_events(self, event):
-        action = self.pause_menu.handle_events(event)
-        if action == "continue":
-            self.state = "playing"
-        elif action == "quit":
-            self.state = "menu"
-            
-    def draw_defeated_enemies(self):
+            if self._game_over_menu._menu_button.collidepoint(event.pos):
+                self._state = "menu"
+
+    def _draw_defeated_enemies(self):
         skull_image = pygame.image.load("images/decor/Skull.png")
         skull_image = pygame.transform.scale(skull_image, (40, 40))
         skull_rect = skull_image.get_rect()
         skull_x = self.WINDOW_WIDTH - skull_rect.width - 10
         skull_y = 10
-        self.screen.blit(skull_image, (skull_x, skull_y))
+        self._screen.blit(skull_image, (skull_x, skull_y))
 
         font = pygame.font.Font(None, 36)
-        text = font.render(str(self.defeated_enemies), True, (255, 255, 255))
+        text = font.render(str(self._defeated_enemies), True, (255, 255, 255))
         text_rect = text.get_rect(midright=(skull_x - 5, skull_y + skull_rect.height // 2))
-        self.screen.blit(text, text_rect)
+        self._screen.blit(text, text_rect)
 
-    def quit_game(self):
+    def _quit_game(self):
         pygame.quit()
         sys.exit()
 
