@@ -148,7 +148,7 @@ class Game:
         if event.type == pygame.QUIT:
             self.running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if self.menu.play_button.collidepoint(event.pos):
+            if self.menu._play_button.collidepoint(event.pos):
                 self.start_game()
                 self.state = "playing"
 
@@ -203,7 +203,7 @@ class Game:
         for enemy in self.enemies[:]:
             enemy.update(self.player.x, self.player.y, self.player, self.obstacles)
             for fireball in self.player.fireballs[:]:
-                if fireball.rect.colliderect(enemy.rect):
+                if fireball.rect.colliderect(enemy._rect):
                     enemy.take_damage(self.player.attack_power)
                     self.player.fireballs.remove(fireball)
                     if enemy.hp <= 0:
@@ -240,7 +240,7 @@ class Game:
         if event.type == pygame.QUIT:
             self.running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if self.game_over_menu.menu_button.collidepoint(event.pos):
+            if self.game_over_menu._menu_button.collidepoint(event.pos):
                 self.state = "menu"
                     
     def handle_pause_events(self, event):
