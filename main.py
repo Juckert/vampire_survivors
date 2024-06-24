@@ -4,7 +4,7 @@ import random
 import time
 from player import Punk
 from obstacle import Rock, Tree
-from enemy import Knight
+from enemy import Knight, Skeleton
 
 class Game:
     WINDOW_WIDTH = 1440
@@ -81,7 +81,8 @@ class Game:
             while True:
                 x, y = random.randint(0, self.MAP_WIDTH - 75), random.randint(0, self.MAP_HEIGHT - 75)
                 if abs(x - self.player.x) > self.WINDOW_WIDTH // 2 or abs(y - self.player.y) > self.WINDOW_HEIGHT // 2:
-                    enemies.append(Knight(x, y))
+                    enemy_type = random.choice([Knight, Skeleton])
+                    enemies.append(enemy_type(x, y))
                     break
         return enemies
 
@@ -96,8 +97,8 @@ class Game:
                 self.update_game_state()
                 self.draw_frame()
             elif self.state == "paused":
-                self.pause_menu.draw()
                 self.handle_pause_events()
+                self.pause_menu.draw()
             elif self.state == "game_over":
                 self.handle_game_over_events()
                 self.game_over_menu.draw()
@@ -118,8 +119,18 @@ class Game:
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:  # Press 'P' to pause
+                if event.key == pygame.K_p:
                     self.state = "paused"
+
+    def handle_pause_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    self.state = "playing"
+                elif event.key == pygame.K_q:
+                    self.state = "menu"
 
     def update_game_state(self):
         keys = pygame.key.get_pressed()
@@ -178,16 +189,6 @@ class Game:
                 if self.game_over_menu.menu_button.collidepoint(event.pos):
                     self.state = "menu"
                     
-    def handle_pause_events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:  # Press 'P' to resume
-                    self.state = "playing"
-                elif event.key == pygame.K_q:  # Press 'Q' to quit to the main menu
-                    self.state = "menu"
-
     def draw_defeated_enemies(self):
         skull_image = pygame.image.load("images/decor/Skull.png")
         skull_image = pygame.transform.scale(skull_image, (40, 40))
@@ -229,15 +230,15 @@ class PauseMenu:
         self.window_width = window_width
         self.window_height = window_height
         self.font = pygame.font.Font(None, 74)
-        
+
     def draw(self):
         self.screen.fill((0, 0, 0))
         pause_text = self.font.render("Paused", True, (255, 255, 255))
         self.screen.blit(pause_text, (self.window_width // 2 - 100, self.window_height // 2 - 100))
-        resume_text = self.font.render("Press 'P' to Resume", True, (255, 255, 255))
+        resume_text = self.font.render("Press P to Resume", True, (255, 255, 255))
         self.screen.blit(resume_text, (self.window_width // 2 - 250, self.window_height // 2))
-        quit_text = self.font.render("Press 'Q' to Quit to Menu", True, (255, 255, 255))
-        self.screen.blit(quit_text, (self.window_width // 2 - 300, self.window_height // 2 + 100))
+        quit_text = self.font.render("Press Q to Quit", True, (255, 255, 255))
+        self.screen.blit(quit_text, (self.window_width // 2 - 200, self.window_height // 2 + 100))
         pygame.display.flip()
 
 class GameOverMenu:
