@@ -20,13 +20,14 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.state = "menu"  # Initial state set to 'menu'
-        
+        self.defeated_enemies = 0
         self.menu = Menu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
         self.game_over_menu = GameOverMenu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
         self.start_time = None
         self.start_game()  # Start game setup
 
     def start_game(self):
+        self.defeated_enemies = 0
         self.background = self.load_background()
         self.player = Punk(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2, 5)
         self.camera_x = self.player.x - self.WINDOW_WIDTH // 2
@@ -135,6 +136,7 @@ class Game:
                     self.player.fireballs.remove(fireball)
                     if enemy.hp <= 0:
                         self.enemies.remove(enemy)
+                        self.defeated_enemies += 1  # Increment defeated enemies counter
                     break
 
     def update_camera(self):
@@ -151,11 +153,11 @@ class Game:
 
         # Render the elapsed time
         self.draw_timer()
-        
+        self.draw_defeated_enemies()
         pygame.display.flip()
     
     def draw_timer(self):
-        font = pygame.font.Font(None, 74)
+        font = pygame.font.Font(None, 50)
         minutes = int(self.elapsed_time // 60)
         seconds = int(self.elapsed_time % 60)      
         time_text = font.render(f"{minutes:02}:{seconds:02}", True, (255, 255, 255))
@@ -168,6 +170,19 @@ class Game:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if self.game_over_menu.menu_button.collidepoint(event.pos):
                     self.state = "menu"
+                    
+    def draw_defeated_enemies(self):
+        skull_image = pygame.image.load("images/decor/Skull.png")
+        skull_image = pygame.transform.scale(skull_image, (40, 40))
+        skull_rect = skull_image.get_rect()
+        skull_x = self.WINDOW_WIDTH - skull_rect.width - 10
+        skull_y = 10
+        self.screen.blit(skull_image, (skull_x, skull_y))
+
+        font = pygame.font.Font(None, 36)
+        text = font.render(str(self.defeated_enemies), True, (255, 255, 255))  # White color
+        text_rect = text.get_rect(midright=(skull_x - 5, skull_y + skull_rect.height // 2))
+        self.screen.blit(text, text_rect)
 
     def quit_game(self):
         pygame.quit()
