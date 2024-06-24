@@ -4,18 +4,25 @@ class Fireball:
     SPEED = 10
     MAX_DISTANCE = 500
 
-    def __init__(self, x, y, direction):
+    def __init__(self, x, y, direction, character_type):
         self._start_x = x
         self._x = x
         self._y = y
         self._direction = direction
+        self.character_type = character_type  # Added character_type attribute
         self._load_images()
         self._image_index = 0
         self._rect = self._images[self._image_index].get_rect(center=(self._x, self._y))
         self._active = True
 
     def _load_images(self):
-        base_path = "images/hero/Punk/Weapon/Fireball_"
+        if self.character_type == "Punk":
+            base_path = "images/hero/Punk/Weapon/Fireball_"  
+        elif self.character_type == "Cyborg":
+            base_path = "images/hero/Cyborg/Weapon/Fireball_"  
+        else:
+            raise ValueError("Unknown character type")
+        
         self._original_images = [pygame.transform.scale(pygame.image.load(f"{base_path}{i}.png"), (40, 40)) for i in range(1, 5)]
         if self._direction == "left":
             self._images = [pygame.transform.flip(image, True, False) for image in self._original_images]

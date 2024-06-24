@@ -3,29 +3,72 @@ from abc import ABC, abstractmethod
 import time
 from fireball import Fireball
 
-
 class Player(ABC):
     def __init__(self, x, y):
-        self.x, self.y = x, y
-        self.speed = 50
-        self.hp = self.max_hp = 100
-        self.attack_power = 10
-        self.current_sprite = 0
-        self.is_facing_left = False
-        self.is_moving = False
-        self.hurt = False
-        self.hurt_start_time = 0
+        self._x, self._y = x, y
+        self._speed = 50
+        self._hp = self._max_hp = 100
+        self._attack_power = 10
+        self._current_sprite = 0
+        self._is_facing_left = False
+        self._is_moving = False
+        self._hurt = False
+        self._hurt_start_time = 0
 
-        self.images_right = []
-        self.images_left = []
-        self.idle_images_right = []
-        self.idle_images_left = []
-        self.hurt_image_right = None
-        self.hurt_image_left = None
-        self.rect = pygame.Rect(self.x, self.y, 75, 75)
-        self.hurt_image_2_right = None
-        self.hurt_image_2_left = None
-        
+        self._images_right = []
+        self._images_left = []
+        self._idle_images_right = []
+        self._idle_images_left = []
+        self._hurt_image_right = None
+        self._hurt_image_left = None
+        self._hurt_image_2_right = None
+        self._hurt_image_2_left = None
+
+        self._rect = pygame.Rect(self._x, self._y, 75, 75)
+        self._fireballs = []
+        self._last_fire_time = 0
+        self._fire_delay = 0.5
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        self._x = value
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        self._y = value
+
+    @property
+    def speed(self):
+        return self._speed
+
+    @property
+    def hp(self):
+        return self._hp
+
+    @hp.setter
+    def hp(self, value):
+        self._hp = value
+
+    @property
+    def max_hp(self):
+        return self._max_hp
+
+    @property
+    def attack_power(self):
+        return self._attack_power
+
+    @property
+    def rect(self):
+        return self._rect
+
     def load_images(self, pattern, count):
         return [pygame.transform.scale(pygame.image.load(pattern.format(i)), (75, 75)) for i in range(1, count + 1)]
 
@@ -34,42 +77,41 @@ class Player(ABC):
         pass
 
     def move(self, dx, dy, facing_left=None):
-        self.x += dx
-        self.y += dy
-        self.is_moving = True
+        self._x += dx
+        self._y += dy
+        self._is_moving = True
         if facing_left is not None:
-            self.is_facing_left = facing_left
+            self._is_facing_left = facing_left
 
     def draw(self, screen, camera_x, camera_y):
-        if self.hurt:
-            if self.is_moving:
-                image = self.hurt_image_2_left if self.is_facing_left else self.hurt_image_2_right
+        self._draw_player(screen, camera_x, camera_y)
+        self._draw_fireballs(screen, camera_x, camera_y)
+
+    def _draw_player(self, screen, camera_x, camera_y):
+        if self._hurt:
+            if self._is_moving:
+                image = self._hurt_image_2_left if self._is_facing_left else self._hurt_image_2_right
             else:
-                image = self.hurt_image_left if self.is_facing_left else self.hurt_image_right
+                image = self._hurt_image_left if self._is_facing_left else self._hurt_image_right
         else:
-            if self.is_moving:
-                images = self.images_left if self.is_facing_left else self.images_right
-                image = images[int(self.current_sprite)]
-                self.current_sprite = (self.current_sprite + 0.1) % len(images)
+            if self._is_moving:
+                images = self._images_left if self._is_facing_left else self._images_right
+                self._current_sprite = (self._current_sprite + 0.1) % len(images)
             else:
-                images = self.idle_images_left if self.is_facing_left else self.idle_images_right
-                image = images[int(self.current_sprite)]
-                self.current_sprite = 0
+                images = self._idle_images_left if self._is_facing_left else self._idle_images_right
+                self._current_sprite = 0
+            image = images[int(self._current_sprite)]
 
-        screen.blit(image, (self.x - camera_x, self.y - camera_y))
-        self.draw_health_bar(screen, camera_x, camera_y)
+        screen.blit(image, (self._x - camera_x, self._y - camera_y))
+        self._draw_health_bar(screen, camera_x, camera_y)
 
-    def clamp_position(self, map_width, map_height):
-        self.x = max(0, min(self.x, map_width - 75))
-        self.y = max(0, min(self.y, map_height - 75))
-
-    def draw_health_bar(self, screen, camera_x, camera_y):
+    def _draw_health_bar(self, screen, camera_x, camera_y):
         bar_length = 75
         bar_height = 10
-        fill = (self.hp / self.max_hp) * bar_length
+        fill = (self._hp / self._max_hp) * bar_length
 
-        health_bar_x = self.x - camera_x
-        health_bar_y = self.y + 80 - camera_y
+        health_bar_x = self._x - camera_x
+        health_bar_y = self._y + 80 - camera_y
 
         outline_rect = pygame.Rect(health_bar_x, health_bar_y, bar_length, bar_height)
         fill_rect = pygame.Rect(health_bar_x, health_bar_y, fill, bar_height)
@@ -78,93 +120,121 @@ class Player(ABC):
         pygame.draw.rect(screen, (255, 255, 255), outline_rect, 2)
 
     def take_damage(self, damage):
-        self.hp = max(0, self.hp - damage)
-        self.hurt = True
-        self.hurt_start_time = time.time()
+        self._hp = max(0, self._hp - damage)
+        self._hurt = True
+        self._hurt_start_time = time.time()
 
     def attack_enemy(self, enemy):
-        enemy.take_damage(self.attack_power)
+        enemy.take_damage(self._attack_power)
 
+    def clamp_position(self, map_width, map_height):
+        self._x = max(0, min(self._x, map_width - 75))
+        self._y = max(0, min(self._y, map_height - 75))
 
+    def _draw_fireballs(self, screen, camera_x, camera_y):
+        for fireball in self._fireballs:
+            fireball.draw(screen, camera_x, camera_y)
+
+    def _update_fireballs(self, map_width, map_height, obstacles):
+        for fireball in self._fireballs[:]:
+            fireball.update()
+            if (fireball._x < 0 or fireball._x > map_width or
+                fireball._y < 0 or fireball._y > map_height):
+                self._fireballs.remove(fireball)
+            else:
+                for obstacle in obstacles:
+                    if fireball.rect.colliderect(obstacle.rect):
+                        self._fireballs.remove(fireball)
+                        break
 
 class Punk(Player):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.images_right = self.load_images("images/hero/Punk/Run/Punk_run_{}.png", 6)
-        self.images_left = [pygame.transform.flip(image, True, False) for image in self.images_right]
-        self.idle_images_right = self.load_images("images/hero/Punk/Idle/Punk_idle_{}.png", 4)
-        self.idle_images_left = [pygame.transform.flip(image, True, False) for image in self.idle_images_right]
-        self.hurt_image_right = pygame.transform.scale(pygame.image.load("images/hero/Punk/Hurt/Punk_hurt.png"), (75, 75))
-        self.hurt_image_left = pygame.transform.flip(self.hurt_image_right, True, False)
-        self.fireballs = []
-        self.last_fire_time = 0
-        self.fire_delay = 0.5
-        self.hurt_image_2_right = pygame.transform.scale(pygame.image.load("images/hero/Punk/Hurt/Punk_hurt_2.png"), (75, 75))
-        self.hurt_image_2_left = pygame.transform.flip(self.hurt_image_2_right, True, False)
-        
-    def update(self, keys, map_width, map_height, obstacles):
-        self.is_moving = False
-        prev_x, prev_y = self.x, self.y
+        self._images_right = self.load_images("images/hero/Punk/Run/Punk_run_{}.png", 6)
+        self._images_left = [pygame.transform.flip(image, True, False) for image in self._images_right]
+        self._idle_images_right = self.load_images("images/hero/Punk/Idle/Punk_idle_{}.png", 4)
+        self._idle_images_left = [pygame.transform.flip(image, True, False) for image in self._idle_images_right]
+        self._hurt_image_right = pygame.transform.scale(pygame.image.load("images/hero/Punk/Hurt/Punk_hurt.png"), (75, 75))
+        self._hurt_image_left = pygame.transform.flip(self._hurt_image_right, True, False)
+        self._hurt_image_2_right = pygame.transform.scale(pygame.image.load("images/hero/Punk/Hurt/Punk_hurt_2.png"), (75, 75))
+        self._hurt_image_2_left = pygame.transform.flip(self._hurt_image_2_right, True, False)
 
-        if keys[pygame.K_w]: self.move(0, -self.speed)
-        if keys[pygame.K_s]: self.move(0, self.speed)
-        if keys[pygame.K_a]: self.move(-self.speed, 0, True)
-        if keys[pygame.K_d]: self.move(self.speed, 0, False)
+    def update(self, keys, map_width, map_height, obstacles):
+        self._is_moving = False
+        prev_x, prev_y = self._x, self._y
+
+        if keys[pygame.K_w]: self.move(0, -self._speed)
+        if keys[pygame.K_s]: self.move(0, self._speed)
+        if keys[pygame.K_a]: self.move(-self._speed, 0, True)
+        if keys[pygame.K_d]: self.move(self._speed, 0, False)
 
         if keys[pygame.K_SPACE]:
             self.shoot_fireball()
 
-        self.rect.topleft = (self.x, self.y)
+        self._rect.topleft = (self._x, self._y)
         for obstacle in obstacles:
-            if self.rect.colliderect(obstacle.rect):
-                self.x, self.y = prev_x, prev_y
-                self.rect.topleft = (self.x, self.y)
+            if self._rect.colliderect(obstacle.rect):
+                self._x, self._y = prev_x, prev_y
+                self._rect.topleft = (self._x, self._y)
                 break
 
         self.clamp_position(map_width, map_height)
-        
-        if self.hurt and time.time() - self.hurt_start_time > 1:
-            self.hurt = False
 
-        self.update_fireballs(map_width, map_height, obstacles)
+        if self._hurt and time.time() - self._hurt_start_time > 1:
+            self._hurt = False
+
+        self._update_fireballs(map_width, map_height, obstacles)
 
     def shoot_fireball(self):
         current_time = time.time()
-        if current_time - self.last_fire_time >= self.fire_delay:
-            direction = "left" if self.is_facing_left else "right"
-            fireball = Fireball(self.x, self.y, direction)
-            self.fireballs.append(fireball)
-            self.last_fire_time = current_time
+        if current_time - self._last_fire_time >= self._fire_delay:
+            direction = "left" if self._is_facing_left else "right"
+            fireball = Fireball(self._x, self._y, direction, "Punk")
+            self._fireballs.append(fireball)
+            self._last_fire_time = current_time
 
+class Cyborg(Player):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self._images_right = self.load_images("images/hero/Cyborg/Run/Cyborg_run_{}.png", 6)
+        self._images_left = [pygame.transform.flip(image, True, False) for image in self._images_right]
+        self._idle_images_right = self.load_images("images/hero/Cyborg/Idle/Cyborg_idle_{}.png", 4)
+        self._idle_images_left = [pygame.transform.flip(image, True, False) for image in self._idle_images_right]
+        self._hurt_image_right = pygame.transform.scale(pygame.image.load("images/hero/Cyborg/Hurt/Cyborg_hurt_1.png"), (75, 75))
+        self._hurt_image_left = pygame.transform.flip(self._hurt_image_right, True, False)
+        self._hurt_image_2_right = pygame.transform.scale(pygame.image.load("images/hero/Cyborg/Hurt/Cyborg_hurt_2.png"), (75, 75))
+        self._hurt_image_2_left = pygame.transform.flip(self._hurt_image_2_right, True, False)
 
-    def update_fireballs(self, map_width, map_height, obstacles):
-        for fireball in self.fireballs[:]:
-            fireball.update()
-            if (fireball._x < 0 or fireball._x > map_width or
-                fireball._y < 0 or fireball._y > map_height):
-                self.fireballs.remove(fireball)
-            else:
-                for obstacle in obstacles:
-                    if fireball.rect.colliderect(obstacle.rect):
-                        self.fireballs.remove(fireball)
-                        break
+    def update(self, keys, map_width, map_height, obstacles):
+        self._is_moving = False
+        prev_x, prev_y = self._x, self._y
 
-    def draw(self, screen, camera_x, camera_y):
-        if self.hurt:
-            if self.is_moving:
-                image = self.hurt_image_2_left if self.is_facing_left else self.hurt_image_2_right
-            else:
-                image = self.hurt_image_left if self.is_facing_left else self.hurt_image_right
-        else:
-            if self.is_moving:
-                images = self.images_left if self.is_facing_left else self.images_right
-                self.current_sprite = (self.current_sprite + 0.1) % len(images)
-            else:
-                images = self.idle_images_left if self.is_facing_left else self.idle_images_right
-                self.current_sprite = 0
-            image = images[int(self.current_sprite)]
-        screen.blit(image, (self.x - camera_x, self.y - camera_y))
-        self.draw_health_bar(screen, camera_x, camera_y)
+        if keys[pygame.K_w]: self.move(0, -self._speed)
+        if keys[pygame.K_s]: self.move(0, self._speed)
+        if keys[pygame.K_a]: self.move(-self._speed, 0, True)
+        if keys[pygame.K_d]: self.move(self._speed, 0, False)
 
-        for fireball in self.fireballs:
-            fireball.draw(screen, camera_x, camera_y)
+        if keys[pygame.K_SPACE]:
+            self.shoot_fireball()
+
+        self._rect.topleft = (self._x, self._y)
+        for obstacle in obstacles:
+            if self._rect.colliderect(obstacle.rect):
+                self._x, self._y = prev_x, prev_y
+                self._rect.topleft = (self._x, self._y)
+                break
+
+        self.clamp_position(map_width, map_height)
+
+        if self._hurt and time.time() - self._hurt_start_time > 1:
+            self._hurt = False
+
+        self._update_fireballs(map_width, map_height, obstacles)
+
+    def shoot_fireball(self):
+        current_time = time.time()
+        if current_time - self._last_fire_time >= self._fire_delay:
+            direction = "left" if self._is_facing_left else "right"
+            fireball = Fireball(self._x, self._y, direction, "Cyborg")
+            self._fireballs.append(fireball)
+            self._last_fire_time = current_time

@@ -1,7 +1,7 @@
 import pygame
 import sys
 import random
-from player import Punk
+from player import Punk, Cyborg
 from obstacle import Rock, Tree
 from enemy import Knight, Skeleton, Demon
 from menu import Menu, PauseMenu, GameOverMenu
@@ -207,10 +207,10 @@ class Game:
     def _update_enemies(self):
         for enemy in self._enemies[:]:
             enemy.update(self._player.x, self._player.y, self._player, self._obstacles)
-            for fireball in self._player.fireballs[:]:
+            for fireball in self._player._fireballs[:]:
                 if fireball.rect.colliderect(enemy._rect):
                     enemy.take_damage(self._player.attack_power)
-                    self._player.fireballs.remove(fireball)
+                    self._player._fireballs.remove(fireball)
                     if enemy.hp <= 0:
                         self._enemies.remove(enemy)
                         self._defeated_enemies += 1
