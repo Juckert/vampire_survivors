@@ -22,6 +22,7 @@ class Game:
         self.state = "menu"  # Initial state set to 'menu'
         self.defeated_enemies = 0
         self.menu = Menu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
+        self.pause_menu = PauseMenu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
         self.game_over_menu = GameOverMenu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
         self.start_time = None
         self.start_game()  # Start game setup
@@ -94,6 +95,9 @@ class Game:
                 self.handle_events()
                 self.update_game_state()
                 self.draw_frame()
+            elif self.state == "paused":
+                self.pause_menu.draw()
+                self.handle_pause_events()
             elif self.state == "game_over":
                 self.handle_game_over_events()
                 self.game_over_menu.draw()
@@ -113,6 +117,9 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:  # Press 'P' to pause
+                    self.state = "paused"
 
     def update_game_state(self):
         keys = pygame.key.get_pressed()
@@ -171,6 +178,16 @@ class Game:
                 if self.game_over_menu.menu_button.collidepoint(event.pos):
                     self.state = "menu"
                     
+    def handle_pause_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:  # Press 'P' to resume
+                    self.state = "playing"
+                elif event.key == pygame.K_q:  # Press 'Q' to quit to the main menu
+                    self.state = "menu"
+
     def draw_defeated_enemies(self):
         skull_image = pygame.image.load("images/decor/Skull.png")
         skull_image = pygame.transform.scale(skull_image, (40, 40))
@@ -204,6 +221,23 @@ class Menu:
         play_text = self.font.render("Play", True, (255, 255, 255))
         self.screen.blit(play_text, (self.play_button.x + 50, self.play_button.y + 25))
         pygame.draw.rect(self.screen, (255, 255, 255), self.play_button, 2)
+        pygame.display.flip()
+
+class PauseMenu:
+    def __init__(self, screen, window_width, window_height):
+        self.screen = screen
+        self.window_width = window_width
+        self.window_height = window_height
+        self.font = pygame.font.Font(None, 74)
+        
+    def draw(self):
+        self.screen.fill((0, 0, 0))
+        pause_text = self.font.render("Paused", True, (255, 255, 255))
+        self.screen.blit(pause_text, (self.window_width // 2 - 100, self.window_height // 2 - 100))
+        resume_text = self.font.render("Press 'P' to Resume", True, (255, 255, 255))
+        self.screen.blit(resume_text, (self.window_width // 2 - 250, self.window_height // 2))
+        quit_text = self.font.render("Press 'Q' to Quit to Menu", True, (255, 255, 255))
+        self.screen.blit(quit_text, (self.window_width // 2 - 300, self.window_height // 2 + 100))
         pygame.display.flip()
 
 class GameOverMenu:
