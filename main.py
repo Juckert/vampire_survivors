@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+import time
 from player import Punk
 from obstacle import Rock, Tree
 from enemy import Knight
@@ -22,7 +23,7 @@ class Game:
         
         self.menu = Menu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
         self.game_over_menu = GameOverMenu(self.screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
-
+        self.start_time = None
         self.start_game()  # Start game setup
 
     def start_game(self):
@@ -32,6 +33,7 @@ class Game:
         self.camera_y = self.player.y - self.WINDOW_HEIGHT // 2
         self.obstacles = self.create_obstacles()
         self.enemies = self.create_enemies()
+        self.start_time = pygame.time.get_ticks()
 
     def load_background(self):
         background = pygame.image.load("images/fon/fon_2.jpg")
@@ -117,6 +119,10 @@ class Game:
         self.update_enemies()
         self.update_camera()
 
+        # Calculate the elapsed time in seconds
+        current_time = pygame.time.get_ticks()
+        self.elapsed_time = (current_time - self.start_time) / 1000
+
         if self.player.hp <= 0:
             self.state = "game_over"
 
@@ -142,7 +148,18 @@ class Game:
         for enemy in self.enemies:
             enemy.draw(self.screen, self.camera_x, self.camera_y)
         self.player.draw(self.screen, self.camera_x, self.camera_y)
+
+        # Render the elapsed time
+        self.draw_timer()
+        
         pygame.display.flip()
+    
+    def draw_timer(self):
+        font = pygame.font.Font(None, 74)
+        minutes = int(self.elapsed_time // 60)
+        seconds = int(self.elapsed_time % 60)      
+        time_text = font.render(f"{minutes:02}:{seconds:02}", True, (255, 255, 255))
+        self.screen.blit(time_text, (self.screen.get_width() // 2 - 50, 20))
 
     def handle_game_over_events(self):
         for event in pygame.event.get():
