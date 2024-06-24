@@ -4,7 +4,7 @@ import random
 import time
 from player import Punk
 from obstacle import Rock, Tree
-from enemy import Knight, Skeleton
+from enemy import Knight, Skeleton, Demon
 
 class Game:
     WINDOW_WIDTH = 1440
@@ -81,7 +81,7 @@ class Game:
             while True:
                 x, y = random.randint(0, self.MAP_WIDTH - 75), random.randint(0, self.MAP_HEIGHT - 75)
                 if abs(x - self.player.x) > self.WINDOW_WIDTH // 2 or abs(y - self.player.y) > self.WINDOW_HEIGHT // 2:
-                    enemy_type = random.choice([Knight, Skeleton])
+                    enemy_type = random.choice([Knight, Skeleton, Demon])
                     enemies.append(enemy_type(x, y))
                     break
         return enemies
