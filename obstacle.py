@@ -3,19 +3,24 @@ from abc import ABC, abstractmethod
 
 class Obstacle(ABC):
     def __init__(self, x, y, image_path):
-        self.x, self.y = x, y
-        self.image = pygame.transform.scale(pygame.image.load(image_path), (75, 75))
-        self.rect = self.image.get_rect(topleft=(self.x, self.y))
+        self._x = x
+        self._y = y
+        self._image = pygame.transform.scale(pygame.image.load(image_path), (75, 75))
+        self._rect = self._image.get_rect(topleft=(self._x, self._y))
+
+    @property
+    def rect(self):
+        return self._rect
 
     def draw(self, screen, camera_x, camera_y):
-        screen.blit(self.image, (self.x - camera_x, self.y - camera_y))
+        screen.blit(self._image, (self._x - camera_x, self._y - camera_y))
 
 class Rock(Obstacle):
     def __init__(self, x, y):
         super().__init__(x, y, "images/let/Rocks/Rock_1.png")
 
 class Tree(Obstacle):
-    TREE_IMAGES = {
+    _TREE_IMAGES = {
         "birch": "images/let/Tree/Birch/Birch_xl.png",
         "oak": "images/let/Tree/oak/oak_xl.png",
         "withered_tree": "images/let/Tree/Withered_tree/Withered_tree_xl.png",
@@ -23,4 +28,7 @@ class Tree(Obstacle):
     }
 
     def __init__(self, x, y, tree_type):
-        super().__init__(x, y, self.TREE_IMAGES[tree_type])
+        image_path = self._TREE_IMAGES.get(tree_type)
+        if not image_path:
+            raise ValueError(f"Invalid tree type: {tree_type}")
+        super().__init__(x, y, image_path)
