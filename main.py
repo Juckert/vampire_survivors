@@ -1,7 +1,6 @@
 import pygame
 import sys
 import random
-import time
 from player import Punk
 from obstacle import Rock, Tree
 from enemy import Knight, Skeleton, Demon
@@ -30,7 +29,7 @@ class Game:
     def start_game(self):
         self.defeated_enemies = 0
         self.background = self.load_background()
-        self.player = Punk(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2, 5)
+        self.player = Punk(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2)
         self.camera_x = self.player.x - self.WINDOW_WIDTH // 2
         self.camera_y = self.player.y - self.WINDOW_HEIGHT // 2
         self.obstacles = self.create_obstacles()
@@ -73,19 +72,49 @@ class Game:
             x, y = random.randint(0, self.MAP_WIDTH - 75), random.randint(0, self.MAP_HEIGHT - 75)
             if is_valid_position(x, y):
                 return x, y
-
+            
+    def is_valid_enemy_spawn_position(self, x, y):
+        if abs(x - self.player.x) <= self.WINDOW_WIDTH // 2 and abs(y - self.player.y) <= self.WINDOW_HEIGHT // 2:
+            return False
+        if self.is_visible_to_player(x, y):
+            return False
+        if not self.is_valid_enemy_position(x, y):
+            return False
+        
+        return True            
+    def is_valid_enemy_position(self, x, y):
+        safe_distance = 100
+        for obstacle in self.obstacles:
+            if obstacle.rect.collidepoint(x, y):
+                return False
+            if abs(x - obstacle.rect.centerx) < safe_distance and abs(y - obstacle.rect.centery) < safe_distance:
+                return False
+        return True     
+           
+    def is_visible_to_player(self, x, y):
+        player_rect = pygame.Rect(
+            self.player.x - self.WINDOW_WIDTH // 2,
+            self.player.y - self.WINDOW_HEIGHT // 2,
+            self.WINDOW_WIDTH,
+            self.WINDOW_HEIGHT
+        )
+        return player_rect.collidepoint(x, y)
+    
     def create_enemies(self):
         enemies = []
-        num_enemies = random.randint(5, 10)  # Random number of enemies between 5 and 10
+        num_enemies = random.randint(20, 30)  # Random number of enemies between 2 and 3
         for _ in range(num_enemies):
-            while True:
-                x, y = random.randint(0, self.MAP_WIDTH - 75), random.randint(0, self.MAP_HEIGHT - 75)
-                if abs(x - self.player.x) > self.WINDOW_WIDTH // 2 or abs(y - self.player.y) > self.WINDOW_HEIGHT // 2:
-                    enemy_type = random.choice([Knight, Skeleton, Demon])
-                    enemies.append(enemy_type(x, y))
-                    break
+            enemies.append(self.spawn_enemy())
         return enemies
 
+    def spawn_enemy(self):
+        while True:
+            x, y = random.randint(self.WINDOW_WIDTH, self.MAP_WIDTH - 75), random.randint(self.WINDOW_HEIGHT, self.MAP_HEIGHT - 75)
+            if self.is_valid_enemy_spawn_position(x, y):
+                enemy_type = random.choice([Knight, Skeleton, Demon])
+                break
+        return enemy_type(x, y)
+    
     def run(self):
         while self.running:
             if self.state == "menu":
@@ -155,6 +184,8 @@ class Game:
                     if enemy.hp <= 0:
                         self.enemies.remove(enemy)
                         self.defeated_enemies += 1  # Increment defeated enemies counter
+                        new_enemy = self.spawn_enemy()
+                        self.enemies.append(new_enemy)
                     break
 
     def update_camera(self):
@@ -173,7 +204,7 @@ class Game:
         self.draw_timer()
         self.draw_defeated_enemies()
         pygame.display.flip()
-    
+
     def draw_timer(self):
         font = pygame.font.Font(None, 50)
         minutes = int(self.elapsed_time // 60)
@@ -188,7 +219,7 @@ class Game:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if self.game_over_menu.menu_button.collidepoint(event.pos):
                     self.state = "menu"
-                    
+
     def draw_defeated_enemies(self):
         skull_image = pygame.image.load("images/decor/Skull.png")
         skull_image = pygame.transform.scale(skull_image, (40, 40))
@@ -211,17 +242,22 @@ class Menu:
         self.screen = screen
         self.window_width = window_width
         self.window_height = window_height
-        self.font = pygame.font.Font(None, 74)
-        self.play_button = pygame.Rect((window_width // 2 - 100, window_height // 2 - 50), (200, 100))
+        self.play_button = pygame.Rect(window_width // 2 - 50, window_height // 2 - 25, 100, 50)
+        self.title_font = pygame.font.Font(None, 74)
+        self.button_font = pygame.font.Font(None, 36)
 
     def update(self):
         pass
 
     def draw(self):
         self.screen.fill((0, 0, 0))
-        play_text = self.font.render("Play", True, (255, 255, 255))
-        self.screen.blit(play_text, (self.play_button.x + 50, self.play_button.y + 25))
-        pygame.draw.rect(self.screen, (255, 255, 255), self.play_button, 2)
+        title_text = self.title_font.render("Vampire Survivors", True, (255, 0, 0))
+        title_rect = title_text.get_rect(center=(self.window_width // 2, self.window_height // 2 - 100))
+        self.screen.blit(title_text, title_rect)
+        pygame.draw.rect(self.screen, (255, 0, 0), self.play_button)
+        play_text = self.button_font.render("Play", True, (255, 255, 255))
+        play_text_rect = play_text.get_rect(center=self.play_button.center)
+        self.screen.blit(play_text, play_text_rect)
         pygame.display.flip()
 
 class PauseMenu:
@@ -229,16 +265,12 @@ class PauseMenu:
         self.screen = screen
         self.window_width = window_width
         self.window_height = window_height
-        self.font = pygame.font.Font(None, 74)
+        self.pause_font = pygame.font.Font(None, 74)
 
     def draw(self):
-        self.screen.fill((0, 0, 0))
-        pause_text = self.font.render("Paused", True, (255, 255, 255))
-        self.screen.blit(pause_text, (self.window_width // 2 - 100, self.window_height // 2 - 100))
-        resume_text = self.font.render("Press P to Resume", True, (255, 255, 255))
-        self.screen.blit(resume_text, (self.window_width // 2 - 250, self.window_height // 2))
-        quit_text = self.font.render("Press Q to Quit", True, (255, 255, 255))
-        self.screen.blit(quit_text, (self.window_width // 2 - 200, self.window_height // 2 + 100))
+        pause_text = self.pause_font.render("Paused", True, (255, 255, 255))
+        pause_rect = pause_text.get_rect(center=(self.window_width // 2, self.window_height // 2))
+        self.screen.blit(pause_text, pause_rect)
         pygame.display.flip()
 
 class GameOverMenu:
@@ -246,16 +278,19 @@ class GameOverMenu:
         self.screen = screen
         self.window_width = window_width
         self.window_height = window_height
-        self.font = pygame.font.Font(None, 74)
-        self.menu_button = pygame.Rect((window_width // 2 - 100, window_height // 2 - 50), (200, 100))
+        self.menu_button = pygame.Rect(window_width // 2 - 100, window_height // 2 + 50, 200, 50)
+        self.title_font = pygame.font.Font(None, 74)
+        self.button_font = pygame.font.Font(None, 36)
 
     def draw(self):
         self.screen.fill((0, 0, 0))
-        game_over_text = self.font.render("Game Over", True, (255, 0, 0))
-        self.screen.blit(game_over_text, (self.window_width // 2 - 150, self.window_height // 2 - 100))
-        menu_text = self.font.render("Menu", True, (255, 255, 255))
-        self.screen.blit(menu_text, (self.menu_button.x + 50, self.menu_button.y + 25))
-        pygame.draw.rect(self.screen, (255, 255, 255), self.menu_button, 2)
+        title_text = self.title_font.render("Game Over", True, (255, 0, 0))
+        title_rect = title_text.get_rect(center=(self.window_width // 2, self.window_height // 2 - 100))
+        self.screen.blit(title_text, title_rect)
+        pygame.draw.rect(self.screen, (255, 0, 0), self.menu_button)
+        menu_text = self.button_font.render("Main Menu", True, (255, 255, 255))
+        menu_text_rect = menu_text.get_rect(center=self.menu_button.center)
+        self.screen.blit(menu_text, menu_text_rect)
         pygame.display.flip()
 
 if __name__ == "__main__":

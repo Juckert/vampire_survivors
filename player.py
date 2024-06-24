@@ -5,9 +5,9 @@ from fireball import Fireball
 
 
 class Player(ABC):
-    def __init__(self, x, y, speed):
+    def __init__(self, x, y):
         self.x, self.y = x, y
-        self.speed = speed
+        self.speed = 5
         self.hp = self.max_hp = 100
         self.attack_power = 10
         self.current_sprite = 0
@@ -83,8 +83,8 @@ class Player(ABC):
 
 
 class Punk(Player):
-    def __init__(self, x, y, speed):
-        super().__init__(x, y, speed)
+    def __init__(self, x, y):
+        super().__init__(x, y)
         self.images_right = self.load_images("images/hero/Punk/Run/Punk_run_{}.png", 6)
         self.images_left = [pygame.transform.flip(image, True, False) for image in self.images_right]
         self.idle_images_right = self.load_images("images/hero/Punk/Idle/Punk_idle_{}.png", 4)
