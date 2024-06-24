@@ -87,10 +87,23 @@ class PauseMenu(BaseMenu):
         self._continue_button = pygame.Rect(button_x, window_height // 2 - 50, button_width, button_height)
         self._quit_button = pygame.Rect(button_x, window_height // 2 + 50, button_width, button_height)
 
-    def draw(self):
+    def draw(self, elapsed_time, defeated_enemies):
         self.draw_background()
         pause_center = (self.window_width // 2, self.window_height // 2 - 350)
         self.draw_text_no_background("Пауза", self.title_font, (255, 0, 0), pause_center)
+        
+        # Display elapsed time
+        font = pygame.font.Font(None, 36)
+        minutes = int(elapsed_time // 60)
+        seconds = int(elapsed_time % 60)
+        time_text = f"Time: {minutes:02}:{seconds:02}"
+        time_center = (self.window_width // 2, self.window_height // 2 - 250)
+        self.draw_text_no_background(time_text, font, (255, 255, 255), time_center)
+        
+        # Display defeated enemies
+        enemies_text = f"Defeated Enemies: {defeated_enemies}"
+        enemies_center = (self.window_width // 2, self.window_height // 2 - 200)
+        self.draw_text_no_background(enemies_text, font, (255, 255, 255), enemies_center)
         
         self.draw_button(self._continue_button, "Продолжить", (255, 255, 255), (0, 0, 255))
         self.draw_button(self._quit_button, "Выйти в меню", (255, 255, 255), (0, 0, 255))
@@ -110,11 +123,24 @@ class GameOverMenu(BaseMenu):
         super().__init__(screen, window_width, window_height, background_image)
         self._menu_button = pygame.Rect(window_width // 2 - 100, window_height // 2 + 50, 200, 50)
 
-    def draw(self):
+    def draw(self, elapsed_time, defeated_enemies):
         self.draw_background()
 
         game_over_center = (self.window_width // 2, self.window_height // 2 - 350)
         self.draw_text_no_background("Game Over", self.title_font, (255, 0, 0), game_over_center)
+        
+        # Display elapsed time
+        font = pygame.font.Font(None, 50)
+        minutes = int(elapsed_time // 60)
+        seconds = int(elapsed_time % 60)
+        time_text = f"Time: {minutes:02}:{seconds:02}"
+        time_center = (self.window_width // 2, self.window_height // 2 - 200)
+        self.draw_text_no_background(time_text, font, (255, 255, 255), time_center)
+        
+        # Display defeated enemies
+        enemies_text = f"Defeated Enemies: {defeated_enemies}"
+        enemies_center = (self.window_width // 2, self.window_height // 2 - 150)
+        self.draw_text_no_background(enemies_text, font, (255, 255, 255), enemies_center)
         
         self.draw_button(self._menu_button, "Выйти в меню", (255, 255, 255), (0, 0, 255))
         

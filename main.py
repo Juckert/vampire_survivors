@@ -26,6 +26,8 @@ class Game:
         self._pause_menu = PauseMenu(self._screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self._background_image)
         self._game_over_menu = GameOverMenu(self._screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self._background_image)
         self._start_time = None
+        self._pause_start_time = None
+        self._total_paused_time = 0
         self._start_game()
 
     def _start_game(self):
@@ -133,11 +135,11 @@ class Game:
                 self._update_game_state()
                 self._draw_frame()
             elif self._state == "paused":
-                self._pause_menu.draw()
+                self._pause_menu.draw(self._elapsed_time, self._defeated_enemies)
                 for event in pygame.event.get():
                     self._handle_pause_events(event)
             elif self._state == "game_over":
-                self._game_over_menu.draw()
+                self._game_over_menu.draw(self._elapsed_time, self._defeated_enemies)
                 for event in pygame.event.get():
                     self._handle_game_over_events(event)
 
@@ -151,6 +153,7 @@ class Game:
             if self._menu._play_button.collidepoint(event.pos):
                 self._start_game()
                 self._state = "playing"
+                self._total_paused_time = 0  # Reset paused time
 
     def _handle_events(self):
         for event in pygame.event.get():
@@ -159,6 +162,7 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self._state = "paused"
+                    self._pause_start_time = pygame.time.get_ticks()
                 elif event.key == pygame.K_LEFT:
                     self._player.move_left()
                 elif event.key == pygame.K_RIGHT:
@@ -179,10 +183,12 @@ class Game:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self._state = "playing"
+                self._total_paused_time += pygame.time.get_ticks() - self._pause_start_time
         elif event.type == pygame.MOUSEBUTTONDOWN:
             action = self._pause_menu.handle_events(event)
             if action == "continue":
                 self._state = "playing"
+                self._total_paused_time += pygame.time.get_ticks() - self._pause_start_time
             elif action == "quit":
                 self._state = "menu"
 
@@ -193,7 +199,7 @@ class Game:
         self._update_camera()
 
         current_time = pygame.time.get_ticks()
-        self._elapsed_time = (current_time - self._start_time) / 1000
+        self._elapsed_time = (current_time - self._start_time - self._total_paused_time) / 1000
 
         if self._player.hp <= 0:
             self._state = "game_over"
