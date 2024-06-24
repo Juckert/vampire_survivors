@@ -7,7 +7,7 @@ from fireball import Fireball
 class Player(ABC):
     def __init__(self, x, y):
         self.x, self.y = x, y
-        self.speed = 5
+        self.speed = 50
         self.hp = self.max_hp = 100
         self.attack_power = 10
         self.current_sprite = 0

@@ -90,7 +90,7 @@ class Enemy(ABC):
 
 class Knight(Enemy):
     def __init__(self, x, y):
-        speed_coeff = random.uniform(0.5, 0.8)
+        speed_coeff = random.uniform(1, 1.2)
         hp_coeff = random.uniform(1, 1.5)
         attack_power_coeff = random.uniform(1.3, 1.6)
         image_paths = [f"images/enemies/Knight/Run/Knight_Run_{i}.png" for i in range(1, 9)]

@@ -89,7 +89,7 @@ class Game:
         return True
 
     def is_valid_enemy_position(self, x, y):
-        safe_distance = 100
+        safe_distance = 150
         for obstacle in self.obstacles:
             if obstacle.rect.collidepoint(x, y):
                 return False
@@ -115,7 +115,7 @@ class Game:
 
     def spawn_enemy(self):
         while True:
-            x, y = random.randint(self.WINDOW_WIDTH, self.MAP_WIDTH - 75), random.randint(self.WINDOW_HEIGHT, self.MAP_HEIGHT - 75)
+            x, y = random.randint(0, self.MAP_WIDTH - 75), random.randint(0, self.MAP_HEIGHT - 75)
             if self.is_valid_enemy_spawn_position(x, y):
                 enemy_type = random.choice([Knight, Skeleton, Demon])
                 break

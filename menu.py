@@ -16,6 +16,11 @@ class BaseMenu:
         pygame.draw.rect(self.screen, background_color, background_rect)
         self.screen.blit(text_surface, text_rect)
 
+    def draw_text_no_background(self, text, font, color, center):
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect(center=center)
+        self.screen.blit(text_surface, text_rect)
+
     def draw_background(self):
         self.screen.blit(self.background_image, (0, 0))
 
@@ -25,7 +30,6 @@ class BaseMenu:
     def draw(self):
         pass
 
-
 class Menu(BaseMenu):
     def __init__(self, screen, window_width, window_height, background_image):
         super().__init__(screen, window_width, window_height, background_image)
@@ -34,14 +38,18 @@ class Menu(BaseMenu):
     def draw(self):
         self.draw_background()
 
-        # Draw title text with black background and gold color
-        title_text_center = (self.window_width // 2, self.window_height // 2 - 100)
-        self.draw_text_with_background("Vampire Survivors", self.title_font, (255, 215, 0), (0, 0, 0), title_text_center)
+        # Draw first part of title text with gold color (no background)
+        first_part_center = (self.window_width // 2, self.window_height // 2 - 350)
+        self.draw_text_no_background("Vampire", self.title_font, (255, 0, 0), first_part_center)
         
-        # Draw play button with black background and gold color
-        pygame.draw.rect(self.screen, (0, 0, 0), self.play_button)
+        # Draw second part of title text with gold color (no background)
+        second_part_center = (self.window_width // 2, self.window_height // 2 - 250)
+        self.draw_text_no_background("Survivors", self.title_font, (255, 0, 0), second_part_center)
+        
+        # Draw play button with silver background and gold color
+        pygame.draw.rect(self.screen, (0, 0, 255), self.play_button)
         play_text_center = self.play_button.center
-        self.draw_text_with_background("Play", self.button_font, (255, 215, 0), (0, 0, 0), play_text_center)
+        self.draw_text_with_background("Начать", self.button_font, (255, 255, 255), (0, 0, 255), play_text_center)
         
         pygame.display.flip()
 
@@ -54,8 +62,8 @@ class PauseMenu(BaseMenu):
     def draw(self):
         self.draw_background()
 
-        # Draw "Paused" text with black background and gold color
-        self.draw_text_with_background("Paused", self.pause_font, (255, 215, 0), (0, 0, 0), (self.window_width // 2, self.window_height // 2))
+        # Draw "Paused" text with silver background and gold color
+        self.draw_text_with_background("Пауза", self.pause_font, (255, 255, 255), (0, 0, 255), (self.window_width // 2, self.window_height // 2))
         
         pygame.display.flip()
 
@@ -68,12 +76,12 @@ class GameOverMenu(BaseMenu):
     def draw(self):
         self.draw_background()
 
-        # Draw "Game Over" text with black background and gold color
-        self.draw_text_with_background("Game Over", self.title_font, (255, 215, 0), (0, 0, 0), (self.window_width // 2, self.window_height // 2 - 100))
+        # Draw "Game Over" text with silver background and gold color
+        self.draw_text_with_background("Game Over", self.title_font, (255, 255, 255), (0, 0, 255), (self.window_width // 2, self.window_height // 2 - 100))
         
-        # Draw "Main Menu" button with black background and gold color
-        pygame.draw.rect(self.screen, (0, 0, 0), self.menu_button)
+        # Draw "Main Menu" button with silver background and gold color
+        pygame.draw.rect(self.screen, (0, 0, 255), self.menu_button)
         menu_text_center = self.menu_button.center
-        self.draw_text_with_background("Main Menu", self.button_font, (255, 215, 0), (0, 0, 0), menu_text_center)
+        self.draw_text_with_background("Выйти в меню", self.button_font, (255, 255, 255), (0, 0, 255), menu_text_center)
         
         pygame.display.flip()
