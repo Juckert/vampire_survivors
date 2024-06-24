@@ -133,8 +133,8 @@ class Punk(Player):
     def update_fireballs(self, map_width, map_height, obstacles):
         for fireball in self.fireballs[:]:
             fireball.update()
-            if (fireball.x < 0 or fireball.x > map_width or
-                fireball.y < 0 or fireball.y > map_height):
+            if (fireball._x < 0 or fireball._x > map_width or
+                fireball._y < 0 or fireball._y > map_height):
                 self.fireballs.remove(fireball)
             else:
                 for obstacle in obstacles:
