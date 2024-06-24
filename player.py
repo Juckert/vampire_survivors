@@ -124,10 +124,11 @@ class Punk(Player):
     def shoot_fireball(self):
         current_time = time.time()
         if current_time - self.last_fire_time >= self.fire_delay:
-            direction = "right" if not self.is_facing_left else "left"
+            direction = "left" if self.is_facing_left else "right"
             fireball = Fireball(self.x, self.y, direction)
             self.fireballs.append(fireball)
             self.last_fire_time = current_time
+
 
     def update_fireballs(self, map_width, map_height, obstacles):
         for fireball in self.fireballs[:]:
