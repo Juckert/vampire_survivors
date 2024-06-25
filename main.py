@@ -113,7 +113,7 @@ class Game:
 
     def _create_enemies(self):
         enemies = []
-        num_enemies = random.randint(20, 30)
+        num_enemies = random.randint(5, 10)
         for _ in range(num_enemies):
             enemies.append(self._spawn_enemy())
         return enemies

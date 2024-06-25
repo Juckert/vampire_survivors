@@ -5,7 +5,7 @@ import random
 from fireball import Fireball
 
 class Player(ABC):
-    BASE_SPEED = 50
+    BASE_SPEED = 5
     BASE_HP = 100
     BASE_ATTACK_POWER = 10
 
