@@ -61,7 +61,10 @@ class BaseMenu:
 class Menu(BaseMenu):
     def __init__(self, screen, window_width, window_height, background_image):
         super().__init__(screen, window_width, window_height, background_image)
-        self._play_button = pygame.Rect(window_width // 2 - 50, window_height // 2 - 25, 100, 50)
+        self._play_button = pygame.Rect(window_width // 2 - 50, window_height // 2 + 50, 100, 50)
+        self._punk_button = pygame.Rect(window_width // 2 - 150, window_height // 2 - 25, 100, 50)
+        self._cyborg_button = pygame.Rect(window_width // 2 + 50, window_height // 2 - 25, 100, 50)
+        self._selected_character = None
 
     def draw(self):
         self.draw_background()
@@ -75,8 +78,25 @@ class Menu(BaseMenu):
             self.draw_text_no_background(title, self.title_font, (255, 0, 0), center)
         
         self.draw_button(self._play_button, "Начать", (255, 255, 255), (0, 0, 255))
+        self.draw_button(self._punk_button, "Punk", (255, 255, 255), (0, 0, 255))
+        self.draw_button(self._cyborg_button, "Cyborg", (255, 255, 255), (0, 0, 255))
         
         pygame.display.flip()
+
+    def handle_events(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self._play_button.collidepoint(event.pos):
+                if self._selected_character == "Punk":
+                    return "punk"
+                elif self._selected_character == "Cyborg":
+                    return "cyborg"
+                else:
+                    return "default"  # Handle if no character is selected
+            elif self._punk_button.collidepoint(event.pos):
+                self._selected_character = "Punk"
+            elif self._cyborg_button.collidepoint(event.pos):
+                self._selected_character = "Cyborg"
+        return None
 
 class PauseMenu(BaseMenu):
     def __init__(self, screen, window_width, window_height, background_image):

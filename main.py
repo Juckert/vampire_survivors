@@ -33,7 +33,10 @@ class Game:
     def _start_game(self):
         self._defeated_enemies = 0
         self._background = self._load_background()
-        self._player = Cyborg(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2)
+        if self._menu._selected_character == "Punk":
+            self._player = Punk(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2)
+        else:  # Default to Cyborg if nothing selected (or if Cyborg selected explicitly)
+            self._player = Cyborg(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2)
         self._camera_x = self._player.x - self.WINDOW_WIDTH // 2
         self._camera_y = self._player.y - self.WINDOW_HEIGHT // 2
         self._obstacles = self._create_obstacles()
@@ -150,10 +153,11 @@ class Game:
         if event.type == pygame.QUIT:
             self._running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if self._menu._play_button.collidepoint(event.pos):
+            action = self._menu.handle_events(event)
+            if action == "punk" or action == "cyborg":
                 self._start_game()
                 self._state = "playing"
-                self._total_paused_time = 0  # Reset paused time
+                self._total_paused_time = 0 
 
     def _handle_events(self):
         for event in pygame.event.get():
@@ -260,7 +264,7 @@ class Game:
         text = font.render(str(self._defeated_enemies), True, (255, 255, 255))
         text_rect = text.get_rect(midright=(skull_x - 5, skull_y + skull_rect.height // 2))
         self._screen.blit(text, text_rect)
-
+    
     def _quit_game(self):
         pygame.quit()
         sys.exit()

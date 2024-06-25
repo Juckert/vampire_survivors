@@ -103,7 +103,7 @@ class Player(ABC):
     def _draw_health_bar(self, screen, camera_x, camera_y):
         bar_length = 75
         bar_height = 10
-        fill = min((self._hp / self.BASE_HP) * bar_length, bar_length)  # Ensure fill doesn't exceed bar_length
+        fill = min((self._hp / self.BASE_HP) * bar_length, bar_length)
 
         health_bar_x = self._x - camera_x
         health_bar_y = self._y + 80 - camera_y
@@ -147,9 +147,9 @@ class Player(ABC):
 
 class Punk(Player):
     def __init__(self, x, y):
-        speed_coeff = random.uniform(1, 1.2)
-        hp_coeff = random.uniform(1, 1.5)
-        attack_power_coeff = random.uniform(1.3, 1.6)
+        speed_coeff = 1.2
+        hp_coeff = 1.3
+        attack_power_coeff = 1.1
         super().__init__(x, y, speed_coeff, hp_coeff, attack_power_coeff)
         self._images_right = self._load_images([
             "images/hero/Punk/Run/Punk_run_1.png",
@@ -208,9 +208,9 @@ class Punk(Player):
 
 class Cyborg(Player):
     def __init__(self, x, y):
-        speed_coeff = random.uniform(1.2, 1.5)
-        hp_coeff = random.uniform(1, 1.5)
-        attack_power_coeff = random.uniform(1, 1.5)
+        speed_coeff = 1.1
+        hp_coeff = 1.3
+        attack_power_coeff = 1.5
         super().__init__(x, y, speed_coeff, hp_coeff, attack_power_coeff)
         self._images_right = self._load_images([
             "images/hero/Cyborg/Run/Cyborg_run_1.png",

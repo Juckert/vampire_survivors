@@ -122,8 +122,8 @@ class Knight(Enemy):
 class Skeleton(Enemy):
     def __init__(self, x, y):
         speed_coeff = random.uniform(1.1, 1.4)
-        hp_coeff = random.uniform(0.5, 0.8)
-        attack_power_coeff = random.uniform(0.8, 1.3)
+        hp_coeff = random.uniform(1.1, 1.3)
+        attack_power_coeff = random.uniform(1.2, 1.5)
         image_paths = [f"images/enemies/Skeleton/Run/Skeleton_Run_{i}.png" for i in range(1, 13)]
         hurt_image_path = "images/enemies/Skeleton/Hurt/Skeleton_Hurt.png"
         super().__init__(x, y, speed_coeff, hp_coeff, attack_power_coeff, image_paths, hurt_image_path)
