@@ -1,14 +1,20 @@
 import pygame
 from abc import ABC, abstractmethod
 import time
+import random
 from fireball import Fireball
 
 class Player(ABC):
-    def __init__(self, x, y):
-        self._x, self._y = x, y
-        self._speed = 50
-        self._hp = self._max_hp = 100
-        self._attack_power = 10
+    BASE_SPEED = 50
+    BASE_HP = 100
+    BASE_ATTACK_POWER = 10
+
+    def __init__(self, x, y, speed_coeff, hp_coeff, attack_power_coeff):
+        self._x = x
+        self._y = y
+        self._speed = int(self.BASE_SPEED * speed_coeff)
+        self._hp = int(self.BASE_HP * hp_coeff)
+        self._attack_power = int(self.BASE_ATTACK_POWER * attack_power_coeff)
         self._current_sprite = 0
         self._is_facing_left = False
         self._is_moving = False
@@ -58,19 +64,8 @@ class Player(ABC):
         self._hp = value
 
     @property
-    def max_hp(self):
-        return self._max_hp
-
-    @property
     def attack_power(self):
         return self._attack_power
-
-    @property
-    def rect(self):
-        return self._rect
-
-    def load_images(self, pattern, count):
-        return [pygame.transform.scale(pygame.image.load(pattern.format(i)), (75, 75)) for i in range(1, count + 1)]
 
     @abstractmethod
     def update(self, keys, map_width, map_height, obstacles):
@@ -108,7 +103,7 @@ class Player(ABC):
     def _draw_health_bar(self, screen, camera_x, camera_y):
         bar_length = 75
         bar_height = 10
-        fill = (self._hp / self._max_hp) * bar_length
+        fill = min((self._hp / self.BASE_HP) * bar_length, bar_length)  # Ensure fill doesn't exceed bar_length
 
         health_bar_x = self._x - camera_x
         health_bar_y = self._y + 80 - camera_y
@@ -147,12 +142,30 @@ class Player(ABC):
                         self._fireballs.remove(fireball)
                         break
 
+    def _load_images(self, paths):
+        return [pygame.transform.scale(pygame.image.load(path), (75, 75)) for path in paths]
+
 class Punk(Player):
     def __init__(self, x, y):
-        super().__init__(x, y)
-        self._images_right = self.load_images("images/hero/Punk/Run/Punk_run_{}.png", 6)
+        speed_coeff = random.uniform(1, 1.2)
+        hp_coeff = random.uniform(1, 1.5)
+        attack_power_coeff = random.uniform(1.3, 1.6)
+        super().__init__(x, y, speed_coeff, hp_coeff, attack_power_coeff)
+        self._images_right = self._load_images([
+            "images/hero/Punk/Run/Punk_run_1.png",
+            "images/hero/Punk/Run/Punk_run_2.png",
+            "images/hero/Punk/Run/Punk_run_3.png",
+            "images/hero/Punk/Run/Punk_run_4.png",
+            "images/hero/Punk/Run/Punk_run_5.png",
+            "images/hero/Punk/Run/Punk_run_6.png"
+        ])
         self._images_left = [pygame.transform.flip(image, True, False) for image in self._images_right]
-        self._idle_images_right = self.load_images("images/hero/Punk/Idle/Punk_idle_{}.png", 4)
+        self._idle_images_right = self._load_images([
+            "images/hero/Punk/Idle/Punk_idle_1.png",
+            "images/hero/Punk/Idle/Punk_idle_2.png",
+            "images/hero/Punk/Idle/Punk_idle_3.png",
+            "images/hero/Punk/Idle/Punk_idle_4.png"
+        ])
         self._idle_images_left = [pygame.transform.flip(image, True, False) for image in self._idle_images_right]
         self._hurt_image_right = pygame.transform.scale(pygame.image.load("images/hero/Punk/Hurt/Punk_hurt.png"), (75, 75))
         self._hurt_image_left = pygame.transform.flip(self._hurt_image_right, True, False)
@@ -163,10 +176,10 @@ class Punk(Player):
         self._is_moving = False
         prev_x, prev_y = self._x, self._y
 
-        if keys[pygame.K_w]: self.move(0, -self._speed)
-        if keys[pygame.K_s]: self.move(0, self._speed)
-        if keys[pygame.K_a]: self.move(-self._speed, 0, True)
-        if keys[pygame.K_d]: self.move(self._speed, 0, False)
+        if keys[pygame.K_w]: self.move(0, -self.speed)
+        if keys[pygame.K_s]: self.move(0, self.speed)
+        if keys[pygame.K_a]: self.move(-self.speed, 0, True)
+        if keys[pygame.K_d]: self.move(self.speed, 0, False)
 
         if keys[pygame.K_SPACE]:
             self.shoot_fireball()
@@ -195,10 +208,25 @@ class Punk(Player):
 
 class Cyborg(Player):
     def __init__(self, x, y):
-        super().__init__(x, y)
-        self._images_right = self.load_images("images/hero/Cyborg/Run/Cyborg_run_{}.png", 6)
+        speed_coeff = random.uniform(1.2, 1.5)
+        hp_coeff = random.uniform(1, 1.5)
+        attack_power_coeff = random.uniform(1, 1.5)
+        super().__init__(x, y, speed_coeff, hp_coeff, attack_power_coeff)
+        self._images_right = self._load_images([
+            "images/hero/Cyborg/Run/Cyborg_run_1.png",
+            "images/hero/Cyborg/Run/Cyborg_run_2.png",
+            "images/hero/Cyborg/Run/Cyborg_run_3.png",
+            "images/hero/Cyborg/Run/Cyborg_run_4.png",
+            "images/hero/Cyborg/Run/Cyborg_run_5.png",
+            "images/hero/Cyborg/Run/Cyborg_run_6.png"
+        ])
         self._images_left = [pygame.transform.flip(image, True, False) for image in self._images_right]
-        self._idle_images_right = self.load_images("images/hero/Cyborg/Idle/Cyborg_idle_{}.png", 4)
+        self._idle_images_right = self._load_images([
+            "images/hero/Cyborg/Idle/Cyborg_idle_1.png",
+            "images/hero/Cyborg/Idle/Cyborg_idle_2.png",
+            "images/hero/Cyborg/Idle/Cyborg_idle_3.png",
+            "images/hero/Cyborg/Idle/Cyborg_idle_4.png"
+        ])
         self._idle_images_left = [pygame.transform.flip(image, True, False) for image in self._idle_images_right]
         self._hurt_image_right = pygame.transform.scale(pygame.image.load("images/hero/Cyborg/Hurt/Cyborg_hurt_1.png"), (75, 75))
         self._hurt_image_left = pygame.transform.flip(self._hurt_image_right, True, False)
@@ -209,10 +237,10 @@ class Cyborg(Player):
         self._is_moving = False
         prev_x, prev_y = self._x, self._y
 
-        if keys[pygame.K_w]: self.move(0, -self._speed)
-        if keys[pygame.K_s]: self.move(0, self._speed)
-        if keys[pygame.K_a]: self.move(-self._speed, 0, True)
-        if keys[pygame.K_d]: self.move(self._speed, 0, False)
+        if keys[pygame.K_w]: self.move(0, -self.speed)
+        if keys[pygame.K_s]: self.move(0, self.speed)
+        if keys[pygame.K_a]: self.move(-self.speed, 0, True)
+        if keys[pygame.K_d]: self.move(self.speed, 0, False)
 
         if keys[pygame.K_SPACE]:
             self.shoot_fireball()

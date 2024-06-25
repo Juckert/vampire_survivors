@@ -33,7 +33,7 @@ class Game:
     def _start_game(self):
         self._defeated_enemies = 0
         self._background = self._load_background()
-        self._player = Punk(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2)
+        self._player = Cyborg(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2)
         self._camera_x = self._player.x - self.WINDOW_WIDTH // 2
         self._camera_y = self._player.y - self.WINDOW_HEIGHT // 2
         self._obstacles = self._create_obstacles()

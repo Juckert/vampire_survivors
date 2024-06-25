@@ -80,7 +80,7 @@ class Enemy(ABC):
 
     def _attack_player(self, player):
         current_time = time.time()
-        if self._rect.colliderect(player.rect) and current_time - self._last_attack_time >= 1:
+        if self._rect.colliderect(player._rect) and current_time - self._last_attack_time >= 1:
             player.take_damage(self._attack_power)
             self._last_attack_time = current_time
 
