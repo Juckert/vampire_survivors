@@ -16,6 +16,7 @@ class Fireball:
         self._active = True
 
     def _load_images(self):
+        ''' Определяем базовый путь в зависимости от типа персонажа '''
         if self.character_type == "Punk":
             base_path = "images/hero/Punk/Weapon/Fireball_"  
         elif self.character_type == "Cyborg":
@@ -30,6 +31,7 @@ class Fireball:
             self._images = self._original_images
 
     def update(self):
+        ''' Обновляем положение огненного шара в зависимости от направления '''
         if self._direction == "right":
             self._x += self.SPEED
         else:
@@ -41,6 +43,7 @@ class Fireball:
             self._active = False
 
     def draw(self, screen, camera_x, camera_y):
+        ''' Отображаем огненный шар на экране '''
         if self._active:
             current_image = self._images[int(self._image_index)]
             screen.blit(current_image, (self._x - camera_x, self._y - camera_y))

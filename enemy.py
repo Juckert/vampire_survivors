@@ -2,8 +2,10 @@ import pygame
 from abc import ABC, abstractmethod
 import time
 import random
+from algorithm import aabb_collision
 
 class Enemy(ABC):
+    """ Абстрактный базовый класс для врагов """
     BASE_MIN_SPEED = 1
     BASE_MAX_SPEED = 5
     BASE_MIN_HP = 30
@@ -29,7 +31,8 @@ class Enemy(ABC):
         if hurt_image_path:
             self._hurt_image_right = pygame.transform.scale(pygame.image.load(hurt_image_path), (75, 75))
             self._hurt_image_left = pygame.transform.flip(self._hurt_image_right, True, False)
-
+            
+    # Свойства для координат и характеристик игрока
     @property
     def x(self):
         return self._x
@@ -51,40 +54,48 @@ class Enemy(ABC):
         return self._attack_power
 
     def _load_images(self, paths):
+        """ Загружает изображения врага для анимации """
         return [pygame.transform.scale(pygame.image.load(path), (75, 75)) for path in paths]
 
     def _update_position(self, player_x, player_y):
+        """ Обновляет позицию врага в направлении к игроку """
         prev_x, prev_y = self._x, self._y
 
-        if abs(self._x - player_x) > abs(self._y - player_y):
-            if self._x < player_x:
-                self._x += self._speed
-                self._is_facing_left = False
+        distance = ((self._x - player_x) ** 2 + (self._y - player_y) ** 2) ** 0.5
+
+        if distance >= 30:
+            if abs(self._x - player_x) > abs(self._y - player_y):
+                if self._x < player_x:
+                    self._x += self._speed
+                    self._is_facing_left = False
+                else:
+                    self._x -= self._speed
+                    self._is_facing_left = True
             else:
-                self._x -= self._speed
-                self._is_facing_left = True
-        else:
-            if self._y < player_y:
-                self._y += self._speed
-            else:
-                self._y -= self._speed
+                if self._y < player_y:
+                    self._y += self._speed
+                else:
+                    self._y -= self._speed
 
         self._rect.topleft = (self._x, self._y)
         return prev_x, prev_y
 
     def _handle_collisions(self, obstacles):
+        """ Проверяет столкновение с пряпятствием """
         for obstacle in obstacles:
-            if self._rect.colliderect(obstacle.rect):
+            if aabb_collision(self._rect, obstacle.rect):
                 return True
         return False
 
     def _attack_player(self, player):
+        """ Атакует игрока, если игрок находится в пределах атаки """
         current_time = time.time()
         if self._rect.colliderect(player._rect) and current_time - self._last_attack_time >= 1:
             player.take_damage(self._attack_power)
             self._last_attack_time = current_time
 
     def update(self, player_x, player_y, player, obstacles):
+        """ Обновление состояния врага """
         prev_x, prev_y = self._update_position(player_x, player_y)
 
         if self._handle_collisions(obstacles):
@@ -97,6 +108,7 @@ class Enemy(ABC):
             self._hurt = False
 
     def draw(self, screen, camera_x, camera_y):
+        """ Отрисовывает врага """
         if self._hurt:
             image = self._hurt_image_left if self._is_facing_left else self._hurt_image_right
         else:
@@ -106,11 +118,13 @@ class Enemy(ABC):
         screen.blit(image, (self._x - camera_x, self._y - camera_y))
 
     def take_damage(self, damage):
+        """ Наносит урон врагу и запускает анимацию получения урона """
         self._hp = max(0, self._hp - damage)
         self._hurt = True
         self._hurt_start_time = time.time()
 
 class Knight(Enemy):
+    """ Класс для врага рыцарь"""
     def __init__(self, x, y):
         speed_coeff = random.uniform(1, 1.2)
         hp_coeff = random.uniform(1, 1.5)
@@ -120,6 +134,7 @@ class Knight(Enemy):
         super().__init__(x, y, speed_coeff, hp_coeff, attack_power_coeff, image_paths, hurt_image_path)
 
 class Skeleton(Enemy):
+    """ Класс для врага скелета """
     def __init__(self, x, y):
         speed_coeff = random.uniform(1.1, 1.4)
         hp_coeff = random.uniform(1.1, 1.3)
@@ -129,6 +144,7 @@ class Skeleton(Enemy):
         super().__init__(x, y, speed_coeff, hp_coeff, attack_power_coeff, image_paths, hurt_image_path)
 
 class Demon(Enemy):
+    """ Класс для врага демона """
     def __init__(self, x, y):
         speed_coeff = random.uniform(1.2, 1.5)
         hp_coeff = random.uniform(1, 1.5)

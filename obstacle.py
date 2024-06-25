@@ -1,5 +1,5 @@
 import pygame
-from abc import ABC, abstractmethod
+from abc import ABC
 
 class Obstacle(ABC):
     def __init__(self, x, y, image_path):
@@ -13,13 +13,16 @@ class Obstacle(ABC):
         return self._rect
 
     def draw(self, screen, camera_x, camera_y):
+        ''' Отрисовка изображения препятствия '''
         screen.blit(self._image, (self._x - camera_x, self._y - camera_y))
 
 class Rock(Obstacle):
+    ''' Создание класса Rock'''
     def __init__(self, x, y):
         super().__init__(x, y, "images/let/Rocks/Rock_1.png")
 
 class Tree(Obstacle):
+    ''' Создание класса Tree'''
     _TREE_IMAGES = {
         "birch": "images/let/Tree/Birch/Birch_xl.png",
         "oak": "images/let/Tree/oak/oak_xl.png",

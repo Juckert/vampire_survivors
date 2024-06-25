@@ -1,10 +1,11 @@
 import pygame
 from abc import ABC, abstractmethod
 import time
-import random
 from fireball import Fireball
+from algorithm import aabb_collision
 
 class Player(ABC):
+    ''' Базовый класс Player, от которого наследуются все игроки '''
     BASE_SPEED = 5
     BASE_HP = 100
     BASE_ATTACK_POWER = 10
@@ -12,14 +13,14 @@ class Player(ABC):
     def __init__(self, x, y, speed_coeff, hp_coeff, attack_power_coeff):
         self._x = x
         self._y = y
-        self._speed = int(self.BASE_SPEED * speed_coeff)
-        self._hp = int(self.BASE_HP * hp_coeff)
-        self._attack_power = int(self.BASE_ATTACK_POWER * attack_power_coeff)
-        self._current_sprite = 0
-        self._is_facing_left = False
-        self._is_moving = False
-        self._hurt = False
-        self._hurt_start_time = 0
+        self._speed = int(self.BASE_SPEED * speed_coeff)  
+        self._hp = int(self.BASE_HP * hp_coeff)  
+        self._attack_power = int(self.BASE_ATTACK_POWER * attack_power_coeff)  
+        self._current_sprite = 0  
+        self._is_facing_left = False  
+        self._is_moving = False  
+        self._hurt = False  
+        self._hurt_start_time = 0  
 
         self._images_right = []
         self._images_left = []
@@ -33,8 +34,9 @@ class Player(ABC):
         self._rect = pygame.Rect(self._x, self._y, 75, 75)
         self._fireballs = []
         self._last_fire_time = 0
-        self._fire_delay = 0.5
+        self._fire_delay = 0.5  
 
+    # Свойства для координат и характеристик игрока
     @property
     def x(self):
         return self._x
@@ -67,11 +69,36 @@ class Player(ABC):
     def attack_power(self):
         return self._attack_power
 
-    @abstractmethod
     def update(self, keys, map_width, map_height, obstacles):
-        pass
+        ''' Обновление состояния игрока '''
+        self._is_moving = False
+        prev_x, prev_y = self._x, self._y
 
+        if keys[pygame.K_w]: self.move(0, -self.speed)
+        if keys[pygame.K_s]: self.move(0, self.speed)
+        if keys[pygame.K_a]: self.move(-self.speed, 0, True)
+        if keys[pygame.K_d]: self.move(self.speed, 0, False)
+
+        if keys[pygame.K_SPACE]:
+            self.shoot_fireball()
+
+        self._rect.topleft = (self._x, self._y)
+        for obstacle in obstacles:
+            if aabb_collision(self._rect, obstacle.rect):
+                self._x, self._y = prev_x, prev_y
+                self._rect.topleft = (self._x, self._y)
+                break
+
+        self.clamp_position(map_width, map_height)
+
+        if self._hurt and time.time() - self._hurt_start_time > 1:
+            self._hurt = False
+
+        self._update_fireballs(map_width, map_height, obstacles)
+
+    
     def move(self, dx, dy, facing_left=None):
+        ''' Метод для перемещения игрока '''
         self._x += dx
         self._y += dy
         self._is_moving = True
@@ -79,10 +106,12 @@ class Player(ABC):
             self._is_facing_left = facing_left
 
     def draw(self, screen, camera_x, camera_y):
+        ''' Метод для отрисовки игрока и огненных шаров '''
         self._draw_player(screen, camera_x, camera_y)
         self._draw_fireballs(screen, camera_x, camera_y)
 
     def _draw_player(self, screen, camera_x, camera_y):
+        ''' Метод для отрисовки игрока '''
         if self._hurt:
             if self._is_moving:
                 image = self._hurt_image_2_left if self._is_facing_left else self._hurt_image_2_right
@@ -101,36 +130,42 @@ class Player(ABC):
         self._draw_health_bar(screen, camera_x, camera_y)
 
     def _draw_health_bar(self, screen, camera_x, camera_y):
-        bar_length = 75
-        bar_height = 10
-        fill = min((self._hp / self.BASE_HP) * bar_length, bar_length)
+        ''' Метод для отрисовки полосы здоровья '''
+        bar_length = 75  # Длина полосы здоровья
+        bar_height = 10  # Высота полосы здоровья
+        fill = min((self._hp / self.BASE_HP) * bar_length, bar_length)  # Заполнение полосы здоровья
 
-        health_bar_x = self._x - camera_x
-        health_bar_y = self._y + 80 - camera_y
+        health_bar_x = self._x - camera_x  # Координата x полосы здоровья
+        health_bar_y = self._y + 80 - camera_y  # Координата y полосы здоровья
 
-        outline_rect = pygame.Rect(health_bar_x, health_bar_y, bar_length, bar_height)
-        fill_rect = pygame.Rect(health_bar_x, health_bar_y, fill, bar_height)
+        outline_rect = pygame.Rect(health_bar_x, health_bar_y, bar_length, bar_height)  # Прямоугольник контура полосы здоровья
+        fill_rect = pygame.Rect(health_bar_x, health_bar_y, fill, bar_height)  # Прямоугольник заполнения полосы здоровья
 
-        pygame.draw.rect(screen, (255, 0, 0), fill_rect)
-        pygame.draw.rect(screen, (255, 255, 255), outline_rect, 2)
+        pygame.draw.rect(screen, (255, 0, 0), fill_rect)  # Отрисовка заполнения полосы здоровья
+        pygame.draw.rect(screen, (255, 255, 255), outline_rect, 2)  # Отрисовка контура полосы здоровья
 
     def take_damage(self, damage):
+        ''' Метод для получения урона '''
         self._hp = max(0, self._hp - damage)
         self._hurt = True
         self._hurt_start_time = time.time()
 
     def attack_enemy(self, enemy):
+        ''' Метод для атаки врага '''
         enemy.take_damage(self._attack_power)
 
     def clamp_position(self, map_width, map_height):
+        ''' Метод для ограничения позиции игрока в пределах карты '''
         self._x = max(0, min(self._x, map_width - 75))
         self._y = max(0, min(self._y, map_height - 75))
 
     def _draw_fireballs(self, screen, camera_x, camera_y):
+        ''' Метод для отрисовки огненных шаров '''
         for fireball in self._fireballs:
             fireball.draw(screen, camera_x, camera_y)
 
     def _update_fireballs(self, map_width, map_height, obstacles):
+        ''' Update the state of fireballs '''
         for fireball in self._fireballs[:]:
             fireball.update()
             if (fireball._x < 0 or fireball._x > map_width or
@@ -138,14 +173,16 @@ class Player(ABC):
                 self._fireballs.remove(fireball)
             else:
                 for obstacle in obstacles:
-                    if fireball.rect.colliderect(obstacle.rect):
+                    if aabb_collision(fireball.rect, obstacle.rect):
                         self._fireballs.remove(fireball)
                         break
 
     def _load_images(self, paths):
+        ''' Метод для загрузки изображений '''
         return [pygame.transform.scale(pygame.image.load(path), (75, 75)) for path in paths]
 
 class Punk(Player):
+    ''' Класс Punk, наследующийся от Player '''
     def __init__(self, x, y):
         speed_coeff = 1.2
         hp_coeff = 1.3
@@ -173,6 +210,7 @@ class Punk(Player):
         self._hurt_image_2_left = pygame.transform.flip(self._hurt_image_2_right, True, False)
 
     def update(self, keys, map_width, map_height, obstacles):
+        ''' Метод для обновления состояния игрока '''
         self._is_moving = False
         prev_x, prev_y = self._x, self._y
 
@@ -199,6 +237,7 @@ class Punk(Player):
         self._update_fireballs(map_width, map_height, obstacles)
 
     def shoot_fireball(self):
+        """ Метод для стрельбы огненным шаром """
         current_time = time.time()
         if current_time - self._last_fire_time >= self._fire_delay:
             direction = "left" if self._is_facing_left else "right"
@@ -207,6 +246,7 @@ class Punk(Player):
             self._last_fire_time = current_time
 
 class Cyborg(Player):
+    ''' Класс Cyborg, наследующийся от Player '''
     def __init__(self, x, y):
         speed_coeff = 1.1
         hp_coeff = 1.3
@@ -234,6 +274,7 @@ class Cyborg(Player):
         self._hurt_image_2_left = pygame.transform.flip(self._hurt_image_2_right, True, False)
 
     def update(self, keys, map_width, map_height, obstacles):
+        ''' Метод для обновления состояния игрока '''
         self._is_moving = False
         prev_x, prev_y = self._x, self._y
 
@@ -260,6 +301,7 @@ class Cyborg(Player):
         self._update_fireballs(map_width, map_height, obstacles)
 
     def shoot_fireball(self):
+        """ Метод для стрельбы огненным шаром. """
         current_time = time.time()
         if current_time - self._last_fire_time >= self._fire_delay:
             direction = "left" if self._is_facing_left else "right"

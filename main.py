@@ -21,21 +21,22 @@ class Game:
         self._running = True
         self._state = "menu"
         self._defeated_enemies = 0
-        self._background_image = self._load_background_image()  # Load background image for menus
+        self._background_image = self._load_background_image()
         self._menu = Menu(self._screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self._background_image)
         self._pause_menu = PauseMenu(self._screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self._background_image)
         self._game_over_menu = GameOverMenu(self._screen, self.WINDOW_WIDTH, self.WINDOW_HEIGHT, self._background_image)
         self._start_time = None
         self._pause_start_time = None
         self._total_paused_time = 0
-        self._start_game()
+        self._start_game()  # Начало игры
 
     def _start_game(self):
+        ''' Инициализация объектов '''
         self._defeated_enemies = 0
         self._background = self._load_background()
         if self._menu._selected_character == "Punk":
             self._player = Punk(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2)
-        else:  # Default to Cyborg if nothing selected (or if Cyborg selected explicitly)
+        else:
             self._player = Cyborg(self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2)
         self._camera_x = self._player.x - self.WINDOW_WIDTH // 2
         self._camera_y = self._player.y - self.WINDOW_HEIGHT // 2
@@ -44,20 +45,24 @@ class Game:
         self._start_time = pygame.time.get_ticks()
 
     def _load_background_image(self):
+        ''' Загрузка фонового изображения для меню '''
         image = pygame.image.load("images/fon/Blood_moon.jpg")
         return pygame.transform.scale(image, (self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
 
     def _load_background(self):
+        ''' Загрузка фонового изображения для игры '''
         background = pygame.image.load("images/fon/fon_2.jpg")
         return pygame.transform.scale(background, (self.MAP_WIDTH, self.MAP_HEIGHT))
 
     def _create_obstacles(self):
+        ''' Создание препятствий на карте '''
         obstacles = []
         player_x, player_y = self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2
         occupied_positions = set()
         avoid_radius, min_distance = 100, 400
 
         def is_valid_position(x, y):
+            ''' Проверка на допустимость позиции для размещения препятствия '''
             if abs(x - player_x) < avoid_radius and abs(y - player_y) < avoid_radius:
                 return False
             for ox, oy in occupied_positions:
@@ -65,11 +70,13 @@ class Game:
                     return False
             return True
 
+        # Размещение камней
         for _ in range(5):
             x, y = self._get_random_position(is_valid_position)
             occupied_positions.add((x, y))
             obstacles.append(Rock(x, y))
 
+        # Размещение деревьев
         tree_types = ["birch", "oak", "withered_tree", "withered_white_tree"]
         for _ in range(5):
             x, y = self._get_random_position(is_valid_position)
@@ -79,12 +86,14 @@ class Game:
         return obstacles
 
     def _get_random_position(self, is_valid_position):
+        ''' Получение случайной позиции для объекта '''
         while True:
             x, y = random.randint(0, self.MAP_WIDTH - 75), random.randint(0, self.MAP_HEIGHT - 75)
             if is_valid_position(x, y):
                 return x, y
 
     def _is_valid_enemy_spawn_position(self, x, y):
+        ''' Проверка на допустимость позиции для размещения врага '''
         if abs(x - self._player.x) <= self.WINDOW_WIDTH // 2 and abs(y - self._player.y) <= self.WINDOW_HEIGHT // 2:
             return False
         if self._is_visible_to_player(x, y):
@@ -94,6 +103,7 @@ class Game:
         return True
 
     def _is_valid_enemy_position(self, x, y):
+        ''' Проверка на допустимость позиции врага относительно препятствий '''
         safe_distance = 150
         for obstacle in self._obstacles:
             if obstacle.rect.collidepoint(x, y):
@@ -103,6 +113,7 @@ class Game:
         return True
 
     def _is_visible_to_player(self, x, y):
+        ''' Проверка на видимость позиции врага игроком '''
         player_rect = pygame.Rect(
             self._player.x - self.WINDOW_WIDTH // 2,
             self._player.y - self.WINDOW_HEIGHT // 2,
@@ -112,6 +123,7 @@ class Game:
         return player_rect.collidepoint(x, y)
 
     def _create_enemies(self):
+        ''' Создание врагов на карте '''
         enemies = []
         num_enemies = random.randint(5, 10)
         for _ in range(num_enemies):
@@ -119,6 +131,7 @@ class Game:
         return enemies
 
     def _spawn_enemy(self):
+        ''' Создание одного врага '''
         while True:
             x, y = random.randint(0, self.MAP_WIDTH - 75), random.randint(0, self.MAP_HEIGHT - 75)
             if self._is_valid_enemy_spawn_position(x, y):
@@ -127,6 +140,7 @@ class Game:
         return enemy_type(x, y)
 
     def run(self):
+        ''' Главный цикл игры '''
         while self._running:
             if self._state == "menu":
                 self._menu.update()
@@ -150,6 +164,7 @@ class Game:
         self._quit_game()
 
     def _handle_menu_events(self, event):
+        ''' Обработка событий в меню '''
         if event.type == pygame.QUIT:
             self._running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -160,6 +175,7 @@ class Game:
                 self._total_paused_time = 0 
 
     def _handle_events(self):
+        ''' Обработка игровых событий '''
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self._running = False
@@ -182,6 +198,7 @@ class Game:
                     self._player.stop_vertical()
 
     def _handle_pause_events(self, event):
+        ''' Обработка событий в режиме паузы '''
         if event.type == pygame.QUIT:
             self._running = False
         elif event.type == pygame.KEYDOWN:
@@ -197,6 +214,7 @@ class Game:
                 self._state = "menu"
 
     def _update_game_state(self):
+        ''' Обновление состояния игры '''
         keys = pygame.key.get_pressed()
         self._player.update(keys, self.MAP_WIDTH, self.MAP_HEIGHT, self._obstacles)
         self._update_enemies()
@@ -209,6 +227,7 @@ class Game:
             self._state = "game_over"
 
     def _update_enemies(self):
+        ''' Обновление состояния врагов '''
         for enemy in self._enemies[:]:
             enemy.update(self._player.x, self._player.y, self._player, self._obstacles)
             for fireball in self._player._fireballs[:]:
@@ -223,10 +242,12 @@ class Game:
                     break
 
     def _update_camera(self):
+        ''' Обновление положения камеры '''
         self._camera_x = max(0, min(self._player.x - self.WINDOW_WIDTH // 2, self.MAP_WIDTH - self.WINDOW_WIDTH))
         self._camera_y = max(0, min(self._player.y - self.WINDOW_HEIGHT // 2, self.MAP_HEIGHT - self.WINDOW_HEIGHT))
 
     def _draw_frame(self):
+        ''' Отрисовка кадров игры '''
         self._screen.blit(self._background, (-self._camera_x, -self._camera_y))
         for obstacle in self._obstacles:
             obstacle.draw(self._screen, self._camera_x, self._camera_y)
@@ -239,6 +260,7 @@ class Game:
         pygame.display.flip()
 
     def _draw_timer(self):
+        ''' Отрисовка таймера '''
         font = pygame.font.Font(None, 50)
         minutes = int(self._elapsed_time // 60)
         seconds = int(self._elapsed_time % 60)
@@ -246,6 +268,7 @@ class Game:
         self._screen.blit(time_text, (self._screen.get_width() // 2 - 50, 20))
 
     def _handle_game_over_events(self, event):
+        ''' Обработка событий на экране "игра окончена" '''
         if event.type == pygame.QUIT:
             self._running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -253,6 +276,7 @@ class Game:
                 self._state = "menu"
 
     def _draw_defeated_enemies(self):
+        ''' Отрисовка количества побежденных врагов '''
         skull_image = pygame.image.load("images/decor/Skull.png")
         skull_image = pygame.transform.scale(skull_image, (40, 40))
         skull_rect = skull_image.get_rect()
@@ -266,6 +290,7 @@ class Game:
         self._screen.blit(text, text_rect)
     
     def _quit_game(self):
+        ''' Завершение работы игры '''
         pygame.quit()
         sys.exit()
 
